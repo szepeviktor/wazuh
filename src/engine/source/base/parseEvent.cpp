@@ -49,14 +49,12 @@ Event parseOssecEvent(const std::string& event)
 
     if (event.length() <= MINIMUM_EVENT_ALLOWED_LENGTH)
     {
-        throw std::runtime_error(
-            fmt::format("Invalid event format, event is too short ({})", event.length()));
+        throw std::runtime_error(fmt::format("Invalid event format, event is too short ({})", event.length()));
     }
 
     if (':' != event[1])
     {
-        throw std::runtime_error(fmt::format("Invalid event format, a colon was expected "
-                                             "to be right after the first character"));
+        throw std::runtime_error(fmt::format("Invalid event format, a colon was expected to be right after the first character"));
     }
 
     const int queue {event[0]};
