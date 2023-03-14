@@ -8,8 +8,6 @@ import socket
 import sys
 import time
 
-import awswrangler as wr
-
 logger_name = ':asl_poc:'
 log_levels = {0: logging.WARNING,
               1: logging.INFO,
@@ -25,6 +23,11 @@ stdout_handler.setFormatter(logging_format)
 logger.addHandler(stdout_handler)
 logger.setLevel(log_levels.get(2, logging.DEBUG))
 
+try:
+    import awswrangler as wr
+except ImportError:
+    logger.error('awswrangler module is required.')
+    sys.exit(2)
 
 def check_wazuh_queue_status():
     wazuh_path = find_wazuh_path()
