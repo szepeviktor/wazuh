@@ -25,6 +25,7 @@ stdout_handler.setFormatter(logging_format)
 logger.addHandler(stdout_handler)
 logger.setLevel(log_levels.get(2, logging.DEBUG))
 
+
 def check_wazuh_queue_status():
     wazuh_path = find_wazuh_path()
     wazuh_queue = '{0}/queue/sockets/queue'.format(wazuh_path)
@@ -119,16 +120,20 @@ def get_sqs_client(access_key=None, secret_key=None, region=None, profile_name=N
     try:
         sqs_client = boto_session.client(service_name='sqs')
     except Exception as e:
-        logger.error("Error getting SQS client: {}".format(e))
+        logger.error("Error getting SQS client. Check your credentials file: {}".format(e))
         sys.exit(3)
 
     return sqs_client
 
 
 def fetch_message_from_queue(sqs_client, sqs_queue: str):  # Can be more than one
-    logger.debug(f'Fetching notification from: {sqs_queue}')
-    msg = sqs_client.receive_message(QueueUrl=sqs_queue, AttributeNames=['All'], MaxNumberOfMessages=10)
-    return msg
+    try:
+        logger.debug(f'Fetching notification from: {sqs_queue}')
+        msg = sqs_client.receive_message(QueueUrl=sqs_queue, AttributeNames=['All'], MaxNumberOfMessages=10)
+        return msg
+    except Exception as e:
+        logger.error("Error receiving message from SQS: {}".format(e))
+        sys.exit(4)
 
 
 def get_parquet_location(sqs_client, sqs_queue):
@@ -184,10 +189,10 @@ def get_script_arguments():
 
 
 def purge_sqs(sqs_client, sqs_queue, sqs_purge):
-    if (sqs_purge):
-        logger.debug('Purging SQS queue, please wait a minute..:')
+    if sqs_purge:
+        logger.info('Purging SQS queue, please wait a minute..:')
         sqs_client.purge_queue(QueueUrl=sqs_queue)
-        time.sleep(60)
+        time.sleep(60) # The message deletion process takes up to 60 seconds.
         logger.debug('SQS queue purged succesfully')
 
 
