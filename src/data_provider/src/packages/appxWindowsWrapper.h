@@ -7,6 +7,10 @@
  * License (version 2) as published by the FSF - Free Software
  * Foundation.
  */
+
+#ifndef _PACKAGE_APPX_HPP
+#define _PACKAGE_APPX_HPP
+
 #include <ctime>
 #include <algorithm>
 #include <stdexcept>
@@ -440,3 +444,5 @@ class AppxWindowsWrapper final : public IPackageWrapper
         }
 };
 
+
+#endif // _PACKAGE_APPX_HPP

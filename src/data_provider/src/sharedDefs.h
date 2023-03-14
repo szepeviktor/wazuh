@@ -12,6 +12,9 @@
 #ifndef _SHARED_DEFS_H
 #define _SHARED_DEFS_H
 
+#include <vector>
+#include <string>
+
 constexpr auto WM_SYS_HW_DIR {"/sys/class/dmi/id/board_serial"};
 constexpr auto WM_SYS_CPU_DIR {"/proc/cpuinfo"};
 constexpr auto WM_SYS_CPU_FREC_DIR { "/sys/devices/system/cpu/" };
@@ -94,6 +97,25 @@ enum RPMFields
     RPM_FIELDS_INSTALLTIME,
     RPM_FIELDS_GROUPS,
     RPM_FIELDS_SIZE
+};
+
+static const std::vector<std::string> UNIX_PYPI_DEFAULT_BASE_DIRS
+{
+    "/usr/lib/python*/*-packages",
+    "/usr/lib64/python*/*-packages",
+    "/usr/local/lib/python*/*-packages",
+    "/home/*/.local/lib/python*/*-packages",
+    "/opt/homebrew/lib",
+    "/Libary/Python",
+};
+
+static const std::vector<std::string> UNIX_NPM_DEFAULT_BASE_DIRS
+{
+    "/usr/local/lib",
+    "/opt/homebrew/lib",
+    "/usr/lib",
+    "/home/%/.npm-global/lib",
+    "/Users/%/.npm-global/lib"
 };
 
 #endif //_SHARED_DEFS_H

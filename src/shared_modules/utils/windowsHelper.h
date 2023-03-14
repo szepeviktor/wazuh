@@ -26,6 +26,7 @@
 #include "mem_op.h"
 #include "stringHelper.h"
 #include "encodingWindowsHelper.h"
+#include "registryHelper.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"

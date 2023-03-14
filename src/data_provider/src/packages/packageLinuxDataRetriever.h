@@ -17,6 +17,8 @@
 #include "sharedDefs.h"
 #include "filesystemHelper.h"
 #include "utilsWrapperLinux.hpp"
+#include "packagePYPI.hpp"
+#include "packageNPM.hpp"
 
 /**
  * @brief Fills a JSON object with all available pacman-related information
@@ -66,7 +68,7 @@ class FactoryPackagesCreator<LinuxType::STANDARD> final
     public:
         static void getPackages(std::function<void(nlohmann::json&)> callback)
         {
-            if (Utils::existsDir(DPKG_PATH))
+            /*if (Utils::existsDir(DPKG_PATH))
             {
                 getDpkgInfo(DPKG_STATUS_PATH, callback);
             }
@@ -79,7 +81,10 @@ class FactoryPackagesCreator<LinuxType::STANDARD> final
             if (Utils::existsDir(RPM_PATH))
             {
                 getRpmInfo(callback);
-            }
+            }*/
+
+            PYPI::getPackages(UNIX_PYPI_DEFAULT_BASE_DIRS, callback);
+            //NPM::getPackages(UNIX_NPM_DEFAULT_BASE_DIRS, callback);
         }
 };
 
