@@ -25,6 +25,52 @@ stdout_handler.setFormatter(logging_format)
 logger.addHandler(stdout_handler)
 logger.setLevel(log_levels.get(2, logging.DEBUG))
 
+def check_wazuh_queue_status():
+    wazuh_path = find_wazuh_path()
+    wazuh_queue = '{0}/queue/sockets/queue'.format(wazuh_path)
+
+    try:
+        s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        s.connect(wazuh_queue)
+
+        s.close()
+    except socket.error as e:
+        if e.errno == 111:
+            logger.error("Wazuh must be running.")
+            sys.exit(11)
+    except Exception as e:
+        logger.error("Error checking wazuh status: {}".format(e))
+        sys.exit(13)
+
+
+def send_msg(msg, msg_header, wazuh_queue, dump_json=True):
+    """
+        Sends an AWS event to the Wazuh Queue
+
+        :param msg: JSON message to be sent.
+        :param dump_json: If json.dumps should be applied to the msg
+        """
+    try:
+        json_msg = json.dumps(msg, default=str)
+        s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        s.connect(wazuh_queue)
+        s.send("{header}{msg}".format(header=msg_header,
+                                      msg=json_msg if dump_json else msg).encode())
+        s.close()
+    except socket.error as e:
+        if e.errno == 111:
+            logger.error("Wazuh must be running.")
+            sys.exit(11)
+        elif e.errno == 90:
+            logger.error("Message too long to send to Wazuh.  Skipping message...")
+        else:
+            logger.error("Error sending message to wazuh: {}".format(e))
+            sys.exit(13)
+    except Exception as e:
+        logger.error("Error sending message to wazuh: {}".format(e))
+        sys.exit(13)
+
+
 def find_wazuh_path() -> str:
     """
     Get the Wazuh installation path.
@@ -92,7 +138,7 @@ def get_parquet_location(sqs_client, sqs_queue):
     messages = sqs_message.get('Messages', [])
     for mesg in messages:
         body = mesg['Body']
-        logger.debug(f'Body message is: {body}')
+        # logger.debug(f'Body message is: {body}')
         message = json.loads(body)
         parquet_path = message["detail"]["object"]["key"]
         bucket_path = message["detail"]["bucket"]["name"]
@@ -103,22 +149,20 @@ def get_parquet_location(sqs_client, sqs_queue):
 
 
 def process_events_in_s3(s3_locations):
-    if (s3_locations == []):
+    if not s3_locations:
         logger.debug('No messages found in SQS queue, will retry in 20 seconds')
         time.sleep(20)
     for s3_path in s3_locations:
-        # logger.debug(f'Retrieving parquet from: {s3_path}')
+        logger.debug(f'Retrieving parquet from: {s3_path}')
         asl_events_df = wr.s3.read_parquet(path=s3_path, path_suffix=".gz.parquet")
         asl_events = [row.to_json() for row in asl_events_df.iloc]
         logger.debug(f'Number of OCSF events extracted from parquet: {len(asl_events)}')
         wazuh_path = find_wazuh_path()
         wazuh_queue = '{0}/queue/sockets/queue'.format(wazuh_path)
 
-        cont = 1
         for event in asl_events:
             send_msg(msg=event, msg_header="1:Wazuh-AWS:", wazuh_queue=wazuh_queue, dump_json=False)
-            logger.debug(f"Event {cont} was successfully sent to Analysisd\n")
-            cont += 1
+        logger.info(f"{len(asl_events)} events successfully sent to Analysisd\n")
 
 
 def get_script_arguments():
@@ -139,34 +183,6 @@ def get_script_arguments():
     return parsed_args
 
 
-def send_msg(msg, msg_header, wazuh_queue, dump_json=True):
-    """
-        Sends an AWS event to the Wazuh Queue
-
-        :param msg: JSON message to be sent.
-        :param dump_json: If json.dumps should be applied to the msg
-        """
-    try:
-        json_msg = json.dumps(msg, default=str)
-        s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-        s.connect(wazuh_queue)
-        s.send("{header}{msg}".format(header=msg_header,
-                                      msg=json_msg if dump_json else msg).encode())
-        s.close()
-    except socket.error as e:
-        if e.errno == 111:
-            logger.error("ERROR: Wazuh must be running.")
-            sys.exit(11)
-        elif e.errno == 90:
-            logger.error("ERROR: Message too long to send to Wazuh.  Skipping message...")
-        else:
-            logger.error("ERROR: Error sending message to wazuh: {}".format(e))
-            sys.exit(13)
-    except Exception as e:
-        logger.error("ERROR: Error sending message to wazuh: {}".format(e))
-        sys.exit(13)
-
-
 def purge_sqs(sqs_client, sqs_queue, sqs_purge):
     if (sqs_purge):
         logger.debug('Purging SQS queue, please wait a minute..:')
@@ -179,20 +195,25 @@ def main():
     options = get_script_arguments()
 
     try:
+        check_wazuh_queue_status()
+
         client = get_sqs_client()
         purge_sqs(client, options.sqs_queue, options.sqs_purge)
-        if (options.sqs_notifs):
+        if options.sqs_notifs:
             cond = int(options.sqs_notifs)
             for i in range(cond):
                 parquet_paths = get_parquet_location(client, options.sqs_queue)
-                process_events_in_s3(parquet_paths)
+                if not parquet_paths:
+                    logger.debug(f'No messages to process in queue.')
+                else:
+                    process_events_in_s3(parquet_paths)
         else:
-            while (True):
+            while True:
                 parquet_paths = get_parquet_location(client, options.sqs_queue)
                 process_events_in_s3(parquet_paths)
 
     except Exception as err:
-        logger.error("ERROR: {}".format(err))
+        logger.error("{}".format(err))
         sys.exit(1)
 
 
