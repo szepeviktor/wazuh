@@ -4,6 +4,10 @@ import awswrangler as wr
 import sys, boto3, json
 import socket
 import os
+import time
+import logging
+logging.basicConfig(filename="aws_asl.log", level=logging.DEBUG)
+logging.getLogger().addHandler(logging.StreamHandler())
 
 def find_wazuh_path() -> str:
     """
@@ -53,54 +57,63 @@ def get_sqs_client(access_key=None, secret_key=None, region=None, profile_name=N
     try:
         sqs_client = boto_session.client(service_name='sqs')
     except Exception as e:
-        print("Error getting SQS client: {}".format(e))
+        logging.error("Error getting SQS client: {}".format(e))
         sys.exit(3)
 
     return sqs_client
 
 
-def fetch_message_from_queue(sqs_client, sqs_queue: str):
-    print(f'DEBUG: Fetching notification from: {sqs_queue}')
-    msg = sqs_client.receive_message(QueueUrl=sqs_queue, AttributeNames=['All'])
+def fetch_message_from_queue(sqs_client, sqs_queue: str): #Can be more than one
+    logging.debug(f'Fetching notification from: {sqs_queue}')
+    msg = sqs_client.receive_message(QueueUrl=sqs_queue, AttributeNames=['All'], MaxNumberOfMessages=10)
     return msg
 
 
 def get_parquet_location(sqs_client, sqs_queue):
+    locations = set()
+    logging.debug(f'Retrieving notifications from: {sqs_queue}')
     sqs_message = fetch_message_from_queue(sqs_client, sqs_queue)
-    print(f'DEBUG: Message received is: {sqs_message}')
-    body = sqs_message['Messages'][0]['Body']
-    print(f'DEBUG: Body message is: {body}')
-    message = json.loads(body)
-    parquet_path = message["detail"]["object"]["key"]
-    bucket_path = message["detail"]["bucket"]["name"]
-    path = "s3://"+bucket_path+"/"+parquet_path
-    return path
+    messages = sqs_message.get('Messages', [])
+    for mesg in messages:
+        body = mesg['Body']
+        logging.debug(f'Body message is: {body}')
+        message = json.loads(body)
+        parquet_path = message["detail"]["object"]["key"]
+        bucket_path = message["detail"]["bucket"]["name"]
+        path = "s3://"+bucket_path+"/"+parquet_path
+        locations.add(path)
+    
+    return list(locations)
 
 
-def process_events_in_s3(s3_path):
-    asl_events_df = wr.s3.read_parquet(path=s3_path, path_suffix=".gz.parquet")
-    asl_events = [row.to_json() for row in asl_events_df.iloc]
-    wazuh_path = find_wazuh_path()
-    wazuh_queue = '{0}/queue/sockets/queue'.format(wazuh_path)
+def process_events_in_s3(s3_locations):
+    if(s3_locations == []):
+        logging.debug('No messages found in SQS queue, will retry in 20 seconds')
+        time.sleep(20)
+    for s3_path in s3_locations:
+        #logging.debug(f'Retriving parquet from: {s3_path}')
+        asl_events_df = wr.s3.read_parquet(path=s3_path, path_suffix=".gz.parquet")
+        asl_events = [row.to_json() for row in asl_events_df.iloc]
+        logging.debug(f'Number of OCSF events extracted from parquet: {len(asl_events)}')
+        wazuh_path = find_wazuh_path()
+        wazuh_queue = '{0}/queue/sockets/queue'.format(wazuh_path)
 
-    for event in asl_events:
-        send_msg(msg=event,msg_header="1:Wazuh-AWS:", wazuh_queue=wazuh_queue, dump_json=False)
-        print("Event -->", event)
-
-
-def update_security_lake():
-    sqs = get_sqs_client()
-    paths_from_notifications = fetch_message_from_queue(sqs)
-    for path in paths_from_notifications:
-        process_events_in_s3(path)
+        cont = 1
+        for event in asl_events:
+            send_msg(msg=event,msg_header="1:Wazuh-AWS:", wazuh_queue=wazuh_queue, dump_json=False)
+            logging.debug("Event", cont, "was sent succesfully to Analysisd\n")
+            cont += 1
 
 
 def get_script_arguments():
     parser = argparse.ArgumentParser(usage="usage: %(prog)s [options]",
                                      description="ASL PoC script",
                                      formatter_class=argparse.RawTextHelpFormatter)
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('-q', '--queue', dest='sqs_queue', help='Specify the SQS queue URL containing the notifications',
+    parser.add_argument('-q', '--queue', dest='sqs_queue', help='Specify the SQS queue URL containing the notifications',
+                       action='store', required=True)
+    parser.add_argument('-p', '--purge', dest='sqs_purge', help='Specify if the SQS queue is to be purged at start',
+                       action='store_true')
+    parser.add_argument('-n', '--notifications', dest='sqs_notifs', help='Specify the amount of SQS notifications to get',
                        action='store')
 
     parsed_args = parser.parse_args()
@@ -124,16 +137,24 @@ def send_msg(msg, msg_header, wazuh_queue, dump_json=True):
             s.close()
         except socket.error as e:
             if e.errno == 111:
-                print("ERROR: Wazuh must be running.")
+                logging.error("ERROR: Wazuh must be running.")
                 sys.exit(11)
             elif e.errno == 90:
-                print("ERROR: Message too long to send to Wazuh.  Skipping message...")
+                logging.error("ERROR: Message too long to send to Wazuh.  Skipping message...")
             else:
-                print("ERROR: Error sending message to wazuh: {}".format(e))
+                logging.error("ERROR: Error sending message to wazuh: {}".format(e))
                 sys.exit(13)
         except Exception as e:
-            print("ERROR: Error sending message to wazuh: {}".format(e))
+            logging.error("ERROR: Error sending message to wazuh: {}".format(e))
             sys.exit(13)
+
+
+def purge_sqs(sqs_client, sqs_queue, sqs_purge):
+    if(sqs_purge):
+        logging.debug('Purging SQS queue, please wait a minute..:')
+        sqs_client.purge_queue(QueueUrl=sqs_queue)
+        time.sleep(60)
+        logging.debug('SQS queue purged succesfully')
 
 
 def main():
@@ -141,12 +162,19 @@ def main():
 
     try:
         client = get_sqs_client()
-        print(f'DEBUG: Retrieving notifications from: {options.sqs_queue}')
-        parquet_path = get_parquet_location(client, options.sqs_queue)
-        parquets = process_events_in_s3(parquet_path)
+        purge_sqs(client, options.sqs_queue, options.sqs_purge)
+        if(options.sqs_notifs):
+            cond = int(options.sqs_notifs)
+            for i in range(cond):
+                parquet_paths = get_parquet_location(client, options.sqs_queue)
+                process_events_in_s3(parquet_paths)
+        else:
+            while(True):
+                parquet_paths = get_parquet_location(client, options.sqs_queue)
+                process_events_in_s3(parquet_paths)
 
     except Exception as err:
-        print("ERROR: {}".format(err))
+        logging.error("ERROR: {}".format(err))
         sys.exit(1)
 
 
@@ -154,5 +182,5 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        print("Unknown error: {}".format(e))
+        logging.error("Unknown error: {}".format(e))
         sys.exit(1)
