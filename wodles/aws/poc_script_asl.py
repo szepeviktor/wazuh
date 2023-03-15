@@ -16,7 +16,8 @@ log_levels = {0: logging.WARNING,
 
 # logging.basicConfig(filename="aws_asl.log", level=logging.DEBUG)
 logger = logging.getLogger(logger_name)
-logging_format = logging.Formatter(fmt='%(asctime)s %(name)s - %(levelname)s - %(message)s', datefmt=logging_date_format)
+logging_format = logging.Formatter(fmt='%(asctime)s %(name)s - %(levelname)s - %(message)s',
+                                   datefmt=logging_date_format)
 
 stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setFormatter(logging_format)
@@ -29,6 +30,7 @@ try:
 except ImportError:
     logger.error('awswrangler module is required.')
     sys.exit(2)
+
 
 def check_wazuh_queue_status():
     wazuh_path = find_wazuh_path()
@@ -155,9 +157,6 @@ def get_messages(sqs_client, sqs_queue):
     return messages
 
 
-
-
-
 def process_events_in_s3(messages, sqs_client, sqs_queue):
     if not messages:
         logger.debug('No messages found in SQS queue, will retry in 20 seconds')
@@ -172,11 +171,12 @@ def process_events_in_s3(messages, sqs_client, sqs_queue):
 
         for event in asl_events:
             send_msg(msg=event, msg_header="1:Wazuh-AWS:", wazuh_queue=wazuh_queue, dump_json=False)
-        
-        sqs_client.delete_message(QueueUrl=sqs_queue,ReceiptHandle=message["handle"])
 
-        logger.info(f"{len(asl_events)} events successfully sent to Analysisd and erased from SQS queue\n")
+        logger.info(f"{len(asl_events)} events successfully sent to Analysisd\n")
 
+        sqs_client.delete_message(QueueUrl=sqs_queue, ReceiptHandle=message["handle"])
+
+        logger.info(f"Erased notification of events from SQS queue\n")
 
 
 def get_script_arguments():
@@ -201,7 +201,7 @@ def purge_sqs(sqs_client, sqs_queue, sqs_purge):
     if sqs_purge:
         logger.info('Purging SQS queue, please wait a minute..:')
         sqs_client.purge_queue(QueueUrl=sqs_queue)
-        time.sleep(60) # The message deletion process takes up to 60 seconds.
+        time.sleep(60)  # The message deletion process takes up to 60 seconds.
         logger.debug('SQS queue purged succesfully')
 
 
