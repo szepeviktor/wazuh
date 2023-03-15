@@ -9,13 +9,14 @@ import sys
 import time
 
 logger_name = ':asl_poc:'
+logging_date_format = '%Y/%m/%d %I:%M:%S'
 log_levels = {0: logging.WARNING,
               1: logging.INFO,
               2: logging.DEBUG}
 
 # logging.basicConfig(filename="aws_asl.log", level=logging.DEBUG)
 logger = logging.getLogger(logger_name)
-logging_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+logging_format = logging.Formatter(fmt='%(asctime)s %(name)s - %(levelname)s - %(message)s', datefmt=logging_date_format)
 
 stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setFormatter(logging_format)
