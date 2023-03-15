@@ -87,6 +87,11 @@ THROTTLING_EXCEPTION_ERROR_MESSAGE = "The '{name}' request was denied due to req
                                      " check the following link to learn how to use the Retry configuration to avoid it: " \
                                      f"'{RETRY_CONFIGURATION_URL}'"
 
+ALL_REGIONS = [
+    'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2', 'ap-northeast-1', 'ap-northeast-2', 'ap-southeast-2',
+    'ap-south-1', 'eu-central-1', 'eu-west-1'
+]
+
 
 ################################################################################
 # Classes
@@ -1393,6 +1398,7 @@ class AWSVPCFlowBucket(AWSLogsBucket):
     empty_bucket_message_template = (
         "+++ No logs to process for {flow_log_id} flow log ID in bucket: {aws_account_id}/{aws_region}"
     )
+    empty_bucket_message_template_without_log_id = "+++ No logs to process in bucket: {aws_account_id}/{aws_region}"
 
     def __init__(self, **kwargs):
         self.db_table_name = 'vpcflow'
@@ -1521,6 +1527,9 @@ class AWSVPCFlowBucket(AWSLogsBucket):
 
         boto_session = boto3.Session(**conn_args)
 
+        if region not in ALL_REGIONS:
+            raise ValueError(f"Invalid region '{region}'")
+
         try:
             ec2_client = boto_session.client(service_name='ec2', **self.connection_config)
         except Exception as e:
@@ -1529,11 +1538,19 @@ class AWSVPCFlowBucket(AWSLogsBucket):
 
         return ec2_client
 
-    def get_flow_logs_ids(self, access_key, secret_key, region, profile_name=None):
-        ec2_client = self.get_ec2_client(access_key, secret_key, region,
-                                         profile_name=profile_name)
-        flow_logs_ids = list(map(operator.itemgetter('FlowLogId'), ec2_client.describe_flow_logs()['FlowLogs']))
-        return flow_logs_ids
+    def get_flow_logs_ids(self, access_key, secret_key, region, account_id, profile_name=None):
+        try:
+            ec2_client = self.get_ec2_client(access_key, secret_key, region, profile_name=profile_name)
+            return list(map(operator.itemgetter('FlowLogId'), ec2_client.describe_flow_logs()['FlowLogs']))
+        except ValueError:
+            debug(
+                self.empty_bucket_message_template_without_log_id.format(aws_account_id=account_id, aws_region=region),
+                msg_level=1
+            )
+            debug(
+                f"+++ WARNING: Check the provided region: '{region}'. It's an invalid one.", msg_level=1
+            )
+            return []
 
     def already_processed(self, downloaded_file, aws_account_id, aws_region, flow_log_id):
         cursor = self.db_connector.execute(self.sql_already_processed.format(table_name=self.db_table_name), {
@@ -1557,9 +1574,9 @@ class AWSVPCFlowBucket(AWSLogsBucket):
             for aws_region in regions:
                 debug("+++ Working on {} - {}".format(aws_account_id, aws_region), 1)
                 # get flow log ids for the current region
-                flow_logs_ids = self.get_flow_logs_ids(self.access_key,
-                                                       self.secret_key,
-                                                       aws_region, profile_name=self.profile_name)
+                flow_logs_ids = self.get_flow_logs_ids(
+                    self.access_key, self.secret_key, aws_region, aws_account_id, profile_name=self.profile_name
+                )
                 # for each flow log id
                 for flow_log_id in flow_logs_ids:
                     self.iter_files_in_bucket(aws_account_id, aws_region, flow_log_id=flow_log_id)
@@ -3285,9 +3302,7 @@ def main(argv):
                     options.regions.append(aws_config.get(aws_profile, "region"))
                 else:
                     debug("+++ Warning: No regions were specified, trying to get events from all regions", 1)
-                    options.regions = ['us-east-1', 'us-east-2', 'us-west-1', 'us-west-2',
-                                       'ap-northeast-1', 'ap-northeast-2', 'ap-southeast-2', 'ap-south-1',
-                                       'eu-central-1', 'eu-west-1']
+                    options.regions = ALL_REGIONS
 
             for region in options.regions:
                 debug('+++ Getting alerts from "{}" region.'.format(region), 1)
