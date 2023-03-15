@@ -132,7 +132,7 @@ def get_sqs_client(access_key=None, secret_key=None, region=None, profile_name=N
 
 def fetch_message_from_queue(sqs_client, sqs_queue: str):  # Can be more than one
     try:
-        logger.debug(f'Fetching notification from: {sqs_queue}')
+        logger.debug(f'Retrieving messages from: {sqs_queue}')
         msg = sqs_client.receive_message(QueueUrl=sqs_queue, AttributeNames=['All'], MaxNumberOfMessages=10)
         return msg
     except Exception as e:
@@ -140,30 +140,31 @@ def fetch_message_from_queue(sqs_client, sqs_queue: str):  # Can be more than on
         sys.exit(4)
 
 
-def get_parquet_location(sqs_client, sqs_queue):
-    locations = set()
-    logger.debug(f'Retrieving notifications from: {sqs_queue}')
+def get_messages(sqs_client, sqs_queue):
+    messages = []
     sqs_message = fetch_message_from_queue(sqs_client, sqs_queue)
-    messages = sqs_message.get('Messages', [])
-    for mesg in messages:
+    sqs_messages = sqs_message.get('Messages', [])
+    for mesg in sqs_messages:
         body = mesg['Body']
-        # logger.debug(f'Body message is: {body}')
+        msg_handle = mesg["ReceiptHandle"]
         message = json.loads(body)
         parquet_path = message["detail"]["object"]["key"]
         bucket_path = message["detail"]["bucket"]["name"]
         path = "s3://" + bucket_path + "/" + parquet_path
-        locations.add(path)
+        messages.append({"parquet_location": path, "handle": msg_handle})
+    return messages
 
-    return list(locations)
 
 
-def process_events_in_s3(s3_locations):
-    if not s3_locations:
+
+
+def process_events_in_s3(messages, sqs_client, sqs_queue):
+    if not messages:
         logger.debug('No messages found in SQS queue, will retry in 20 seconds')
         time.sleep(20)
-    for s3_path in s3_locations:
-        logger.debug(f'Retrieving parquet from: {s3_path}')
-        asl_events_df = wr.s3.read_parquet(path=s3_path, path_suffix=".gz.parquet")
+    for message in messages:
+        logger.debug(f'Retrieving parquet from: {message["parquet_location"]}')
+        asl_events_df = wr.s3.read_parquet(path=message["parquet_location"], path_suffix=".gz.parquet")
         asl_events = [row.to_json() for row in asl_events_df.iloc]
         logger.debug(f'Number of OCSF events extracted from parquet: {len(asl_events)}')
         wazuh_path = find_wazuh_path()
@@ -171,7 +172,11 @@ def process_events_in_s3(s3_locations):
 
         for event in asl_events:
             send_msg(msg=event, msg_header="1:Wazuh-AWS:", wazuh_queue=wazuh_queue, dump_json=False)
-        logger.info(f"{len(asl_events)} events successfully sent to Analysisd\n")
+        
+        sqs_client.delete_message(QueueUrl=sqs_queue,ReceiptHandle=message["handle"])
+
+        logger.info(f"{len(asl_events)} events successfully sent to Analysisd and erased from SQS queue\n")
+
 
 
 def get_script_arguments():
@@ -211,15 +216,12 @@ def main():
         if options.sqs_notifs:
             cond = int(options.sqs_notifs)
             for i in range(cond):
-                parquet_paths = get_parquet_location(client, options.sqs_queue)
-                if not parquet_paths:
-                    logger.debug(f'No messages to process in queue.')
-                else:
-                    process_events_in_s3(parquet_paths)
+                messages = get_messages(client, options.sqs_queue)
+                process_events_in_s3(messages, client, options.sqs_queue)
         else:
             while True:
-                parquet_paths = get_parquet_location(client, options.sqs_queue)
-                process_events_in_s3(parquet_paths)
+                messages = get_messages(client, options.sqs_queue)
+                process_events_in_s3(messages, client, options.sqs_queue)
 
     except Exception as err:
         logger.error("{}".format(err))
