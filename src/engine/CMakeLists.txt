@@ -160,6 +160,8 @@ add_subdirectory(${ENGINE_SOURCE_DIR}/store)
 add_subdirectory(${ENGINE_SOURCE_DIR}/router)
 add_subdirectory(${ENGINE_SOURCE_DIR}/conf)
 add_subdirectory(${ENGINE_SOURCE_DIR}/proto)
+add_subdirectory(${ENGINE_SOURCE_DIR}/queue)
+
 
 #TODO isolate rxcpp
 target_link_libraries(main base cmds api)
