@@ -164,7 +164,7 @@ void Router::removeRoute(const std::string& routeName)
     if (it2 == m_priorityRoute.end())
     {
         // Should never happen
-        WAZUH_LOG_WARN("Router: Priority '{}' not found when removing route '{}'", priority, routeName);
+        LOG_WARNING("Router: Priority '{}' not found when removing route '{}'", priority, routeName);
         return;
     }
     const auto envName = it2->second.front().getTarget();
@@ -178,7 +178,7 @@ void Router::removeRoute(const std::string& routeName)
     if (err)
     {
         // Should never happen
-        WAZUH_LOG_WARN("Router: couldn't delete environment '{}': {} ", envName, err.value().message);
+        LOG_WARNING("Router: couldn't delete environment '{}': {} ", envName, err.value().message);
     }
     return;
 }

@@ -543,7 +543,7 @@ struct KVDB::Impl
         // check for error
         if (!iter->status().ok())
         {
-            WAZUH_LOG_WARN("Engine KVDB: Database '{}': Couldn't iterate over "
+            LOG_WARNING("Engine KVDB: Database '{}': Couldn't iterate over "
                            "database: '{}'",
                            m_name,
                            iter->status().ToString());

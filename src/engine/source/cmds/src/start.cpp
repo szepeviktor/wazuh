@@ -171,7 +171,7 @@ void runStart(ConfHandler confManager)
 
         // Register KVDB commands
         api::kvdb::handlers::registerHandlers(kvdb, server->getRegistry());
-        LOG_DEBUG("KVDB API registered.")
+        LOG_DEBUG("KVDB API registered.");
 
         store = std::make_shared<store::FileDriver>(fileStorage);
         LOG_INFO("Store initialized.");
@@ -208,7 +208,7 @@ void runStart(ConfHandler confManager)
         LOG_INFO("Catalog initialized.");
 
         api::catalog::handlers::registerHandlers(catalog, server->getRegistry());
-        LOG_DEBUG("Catalog API registered.")
+        LOG_DEBUG("Catalog API registered.");
 
         router = std::make_shared<router::Router>(builder, store, threads);
         router->run(server->getEventQueue());
@@ -217,7 +217,7 @@ void runStart(ConfHandler confManager)
 
         // Register the API command
         api::router::handlers::registerHandlers(router, server->getRegistry());
-        LOG_DEBUG("Router API registered.")
+        LOG_DEBUG("Router API registered.");
 
         // If the router table is empty or the force flag is passed, load from the command line
         if (router->getRouteTable().empty())
