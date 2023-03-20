@@ -170,8 +170,7 @@ static inline int bindUnixDatagramSocket(const char* path)
 
 EventEndpoint::EventEndpoint(
     const std::string& path,
-    std::shared_ptr<moodycamel::BlockingConcurrentQueue<base::Event>> eventQueue,
-    std::optional<std::string> pathFloodedFile)
+    std::shared_ptr<concurrentQueue> eventQueue)
     : BaseEndpoint {path}
     , m_loop {Loop::getDefault()}
     , m_handle {m_loop->resource<DatagramSocketHandle>()}
@@ -189,28 +188,9 @@ EventEndpoint::EventEndpoint(
                             event.what());
         });
 
-    std::shared_ptr<floodingFile> dumpFileHandler {nullptr};
-    const auto isFloodedFileEnabled {pathFloodedFile.has_value()};
-
-    if (isFloodedFileEnabled)
-    {
-        dumpFileHandler = std::make_shared<floodingFile>(*pathFloodedFile);
-        if (auto err = dumpFileHandler->getError())
-        {
-            throw std::runtime_error(fmt::format("Engine event endpoints: Error opening flooding file '{}': {}",
-                                                 *pathFloodedFile,
-                                                 *err));
-        }
-        else
-        {
-            WAZUH_LOG_DEBUG("Engine event endpoints: Flooding file '{}' are ready.", *pathFloodedFile);
-        }
-    } else {
-        WAZUH_LOG_INFO("Engine event endpoints: Flooding file is not enabled.");
-    }
 
     m_handle->on<DatagramSocketEvent>(
-        [this, dumpFileHandler, isFloodedFileEnabled](const DatagramSocketEvent& eventSocket, DatagramSocketHandle& handle)
+        [this](const DatagramSocketEvent& eventSocket, DatagramSocketHandle& handle)
         {
             auto strRequest = std::string {eventSocket.data.get(), eventSocket.length};
             base::Event event;
@@ -224,34 +204,7 @@ EventEndpoint::EventEndpoint(
                 return;
             }
 
-            if (!isFloodedFileEnabled)
-            {
-                while (!m_eventQueue->try_enqueue(event))
-                {
-                    // Right now we process 1 event for ~0.1ms, we sleep by a factor
-                    // of 5 because we are saturating the queue and we don't want to.
-                    std::this_thread::sleep_for(std::chrono::microseconds(500));
-                }
-            }
-            else
-            {
-                std::size_t attempts {0};
-                const std::size_t maxAttempts {3}; // Shoul be a macro?
-                for (; attempts < maxAttempts; ++attempts)
-                {
-                    if (m_eventQueue->try_enqueue(event))
-                    {
-                        break;
-                    }
-                    // TODO: Benchmarks to find the best value.... (0.1ms)
-                    std::this_thread::sleep_for(std::chrono::microseconds(100));
-
-                }
-                if (attempts >= maxAttempts)
-                {
-                    dumpFileHandler->write(strRequest);
-                }
-            }
+            m_eventQueue->push(std::move(event));
         });
 
     m_socketFd = bindUnixDatagramSocket(m_path.c_str());
@@ -312,7 +265,7 @@ EventEndpoint::~EventEndpoint(void)
     close();
 }
 
-std::shared_ptr<moodycamel::BlockingConcurrentQueue<base::Event>>
+std::shared_ptr<base::queue::ConcurrentQueue<base::Event>>
 EventEndpoint::getEventQueue(void) const
 {
     return m_eventQueue;
