@@ -563,7 +563,7 @@ int wdb_parse(char * input, char * output, int peer) {
                 sql = next;
 
                 gettimeofday(&begin, 0);
-                data = wdb_exec(wdb->db, sql);
+                data = wdb_exec(wdb, sql);
                 gettimeofday(&end, 0);
                 timersub(&end, &begin, &diff);
                 w_inc_agent_sql_time(diff);
@@ -672,7 +672,7 @@ int wdb_parse(char * input, char * output, int peer) {
             wdb_finalize_all_statements(wdb);
 
             if (result != -1) {
-                if (wdb_vacuum(wdb->db) < 0) {
+                if (wdb_vacuum(wdb) < 0) {
                     mdebug1("DB(%s) Cannot vacuum database.", sagent_id);
                     snprintf(output, OS_MAXSTR + 1, "err Cannot vacuum database");
                     result = -1;
@@ -807,7 +807,7 @@ int wdb_parse(char * input, char * output, int peer) {
                 sql = next;
 
                 gettimeofday(&begin, 0);
-                data = wdb_exec(wdb->db, sql);
+                data = wdb_exec(wdb, sql);
                 gettimeofday(&end, 0);
                 timersub(&end, &begin, &diff);
                 w_inc_mitre_sql_time(diff);
@@ -866,7 +866,7 @@ int wdb_parse(char * input, char * output, int peer) {
                 sql = next;
 
                 gettimeofday(&begin, 0);
-                data = wdb_exec(wdb->db, sql);
+                data = wdb_exec(wdb, sql);
                 gettimeofday(&end, 0);
                 timersub(&end, &begin, &diff);
                 w_inc_global_sql_time(diff);
@@ -1266,7 +1266,7 @@ int wdb_parse(char * input, char * output, int peer) {
             wdb_finalize_all_statements(wdb);
 
             if (result != -1) {
-                if (wdb_vacuum(wdb->db) < 0) {
+                if (wdb_vacuum(wdb) < 0) {
                     mdebug1("Global DB Cannot vacuum database.");
                     snprintf(output, OS_MAXSTR + 1, "err Cannot vacuum database");
                     result = -1;
@@ -1569,7 +1569,7 @@ int wdb_parse(char * input, char * output, int peer) {
                 sql = next;
 
                 gettimeofday(&begin, 0);
-                data = wdb_exec(wdb->db, sql);
+                data = wdb_exec(wdb, sql);
                 gettimeofday(&end, 0);
                 timersub(&end, &begin, &diff);
                 w_inc_task_sql_time(diff);
