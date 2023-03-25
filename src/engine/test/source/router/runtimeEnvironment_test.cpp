@@ -14,8 +14,23 @@ constexpr auto env_1 = "environment/env_1/0";
 constexpr auto env_2 = "environment/env_2/0";
 constexpr auto env_default = "environment/default/0";
 
+class RuntimeEnvironment : public ::testing::Test
+{
 
-TEST(RuntimeEnvironment, build_ok)
+protected:
+    virtual void SetUp()
+    {
+        // Logging setup
+        logging::LoggingConfig logConfig;
+        logConfig.logLevel = spdlog::level::off;
+        logConfig.filePath = logging::DEFAULT_TESTS_LOG_PATH;
+        logging::loggingInit(logConfig);
+    }
+
+    virtual void TearDown() {}
+};
+
+TEST_F(RuntimeEnvironment, build_ok)
 {
     auto builder = aux::getFakeBuilder();
     auto environment = std::make_shared<router::RuntimeEnvironment>(env_1);
@@ -23,7 +38,7 @@ TEST(RuntimeEnvironment, build_ok)
     ASSERT_FALSE(error.has_value()) << error.value().message;
 }
 
-TEST(RuntimeEnvironment, build_fail_env)
+TEST_F(RuntimeEnvironment, build_fail_env)
 {
     auto builder = aux::getFakeBuilder();
     auto environment = std::make_shared<router::RuntimeEnvironment>("invalid_env");
@@ -31,7 +46,7 @@ TEST(RuntimeEnvironment, build_fail_env)
     ASSERT_TRUE(error.has_value());
 }
 
-TEST(RuntimeEnvironment, build_fail_builder)
+TEST_F(RuntimeEnvironment, build_fail_builder)
 {
     GTEST_SKIP();
     auto environment = std::make_shared<router::RuntimeEnvironment>("invalid_env");
@@ -39,7 +54,7 @@ TEST(RuntimeEnvironment, build_fail_builder)
     environment->build(nullptr);
 }
 
-TEST(RuntimeEnvironment, build_2_times)
+TEST_F(RuntimeEnvironment, build_2_times)
 {
     auto builder = aux::getFakeBuilder();
     auto environment = std::make_shared<router::RuntimeEnvironment>(env_1);
@@ -50,7 +65,7 @@ TEST(RuntimeEnvironment, build_2_times)
     ASSERT_STREQ(error.value().message.c_str(), "Environment 'environment/env_1/0' is already built");
 }
 
-TEST(RuntimeEnvironment, processEvent_not_built)
+TEST_F(RuntimeEnvironment, processEvent_not_built)
 {
     auto environment = std::make_shared<router::RuntimeEnvironment>(env_1);
     auto e = base::parseEvent::parseOssecEvent(aux::sampleEventsStr[0]);
@@ -60,7 +75,7 @@ TEST(RuntimeEnvironment, processEvent_not_built)
 }
 
 
-TEST(RuntimeEnvironment, processEvent_1_event)
+TEST_F(RuntimeEnvironment, processEvent_1_event)
 {
     auto builder = aux::getFakeBuilder();
     auto environment = std::make_shared<router::RuntimeEnvironment>(env_1);
@@ -78,7 +93,7 @@ TEST(RuntimeEnvironment, processEvent_1_event)
 }
 
 // TODO add more tests
-TEST(RuntimeEnvironment, processEvent_30_event)
+TEST_F(RuntimeEnvironment, processEvent_30_event)
 {
     auto builder = aux::getFakeBuilder();
     auto environment = std::make_shared<router::RuntimeEnvironment>(env_1);

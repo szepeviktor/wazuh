@@ -8,7 +8,22 @@
 
 #include "testAuxiliar/routerAuxiliarFunctions.hpp"
 
-TEST(Router, build_ok)
+class Router : public ::testing::Test
+{
+protected:
+    virtual void SetUp()
+    {
+        // Logging setup
+        logging::LoggingConfig logConfig;
+        logConfig.logLevel = spdlog::level::off;
+        logConfig.filePath = logging::DEFAULT_TESTS_LOG_PATH;
+        logging::loggingInit(logConfig);
+    };
+
+    virtual void TearDown() {};
+};
+
+TEST_F(Router, build_ok)
 {
     auto registry = std::make_shared<builder::internals::Registry>();
     builder::internals::registerBuilders(registry);
@@ -18,7 +33,7 @@ TEST(Router, build_ok)
     router::Router router(builder, store);
 }
 // Add more test
-TEST(Router, build_fail)
+TEST_F(Router, build_fail)
 {
 
     auto registry = std::make_shared<builder::internals::Registry>();
@@ -54,7 +69,7 @@ TEST(Router, build_fail)
     }
 }
 
-TEST(Router, add_list_remove_routes)
+TEST_F(Router, add_list_remove_routes)
 {
     auto registry = std::make_shared<builder::internals::Registry>();
     builder::internals::registerBuilders(registry);
@@ -110,7 +125,7 @@ TEST(Router, add_list_remove_routes)
     ASSERT_EQ(routes.size(), 0);
 }
 
-TEST(Router, priorityChanges) {
+TEST_F(Router, priorityChanges) {
     auto registry = std::make_shared<builder::internals::Registry>();
     builder::internals::registerBuilders(registry);
     auto builder = aux::getFakeBuilder();
@@ -214,7 +229,7 @@ TEST(Router, priorityChanges) {
 }
 
 
-TEST(Router, checkRouting) {
+TEST_F(Router, checkRouting) {
     const auto sleepTime = (const struct timespec[]){{0, 100000000L}};
     const auto ENV_A1 = "deco_A1";
     const auto ENV_B2 = "deco_B2";

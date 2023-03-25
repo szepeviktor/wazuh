@@ -28,8 +28,24 @@ using namespace wazuhdb;
 namespace bld = builder::internals::builders;
 namespace unixStream = base::utils::socketInterface;
 
+class opBuilderWdbQuery : public ::testing::Test
+{
+
+protected:
+    virtual void SetUp()
+    {
+        // Logging setup
+        logging::LoggingConfig logConfig;
+        logConfig.logLevel = spdlog::level::off;
+        logConfig.filePath = logging::DEFAULT_TESTS_LOG_PATH;
+        logging::loggingInit(logConfig);
+    }
+
+    virtual void TearDown() {}
+};
+
 // Build ok
-TEST(opBuilderWdbQuery, BuildSimplest)
+TEST_F(opBuilderWdbQuery, BuildSimplest)
 {
     auto tuple {std::make_tuple(
         std::string {"/wdb/result"},
@@ -40,7 +56,7 @@ TEST(opBuilderWdbQuery, BuildSimplest)
 }
 
 // TODO: the / of the path inside the json should be escaped!
-TEST(opBuilderWdbQuery, BuildsWithJson)
+TEST_F(opBuilderWdbQuery, BuildsWithJson)
 {
     auto tuple {std::make_tuple(
         std::string {"/wdb/result"},
@@ -52,7 +68,7 @@ TEST(opBuilderWdbQuery, BuildsWithJson)
     ASSERT_NO_THROW(bld::opBuilderWdbQuery(tuple));
 }
 
-TEST(opBuilderWdbQuery, BuildsWithQueryRef)
+TEST_F(opBuilderWdbQuery, BuildsWithQueryRef)
 {
     auto tuple {std::make_tuple(std::string {"/wdb/result"},
                                 std::string {"wdb_query"},
@@ -61,7 +77,7 @@ TEST(opBuilderWdbQuery, BuildsWithQueryRef)
     ASSERT_NO_THROW(bld::opBuilderWdbQuery(tuple));
 }
 
-TEST(opBuilderWdbQuery, checkWrongQttyParams)
+TEST_F(opBuilderWdbQuery, checkWrongQttyParams)
 {
     auto tuple {std::make_tuple(
         std::string {"/wdb/result"},
@@ -71,7 +87,7 @@ TEST(opBuilderWdbQuery, checkWrongQttyParams)
     ASSERT_THROW(bld::opBuilderWdbQuery(tuple), std::runtime_error);
 }
 
-TEST(opBuilderWdbQuery, checkNoParams)
+TEST_F(opBuilderWdbQuery, checkNoParams)
 {
     auto tuple {std::make_tuple(std::string {"/wdb/result"},
                                 std::string {"wdb_query"},
@@ -80,7 +96,7 @@ TEST(opBuilderWdbQuery, checkNoParams)
     ASSERT_THROW(bld::opBuilderWdbQuery(tuple), std::runtime_error);
 }
 
-TEST(opBuilderWdbQuery, gettingEmptyReference)
+TEST_F(opBuilderWdbQuery, gettingEmptyReference)
 {
     auto tuple {std::make_tuple(std::string {"/wdb/result"},
                                 std::string {"wdb_query"},
@@ -97,7 +113,7 @@ TEST(opBuilderWdbQuery, gettingEmptyReference)
     ASSERT_FALSE(result1.payload().get()->exists("/wdb/result"));
 }
 
-TEST(opBuilderWdbQuery, gettingNonExistingReference)
+TEST_F(opBuilderWdbQuery, gettingNonExistingReference)
 {
     auto tuple {std::make_tuple(std::string {"/wdb/result"},
                                 std::string {"wdb_query"},
@@ -114,7 +130,7 @@ TEST(opBuilderWdbQuery, gettingNonExistingReference)
     ASSERT_FALSE(result1);
 }
 
-TEST(opBuilderWdbQuery, completeFunctioningWithtDBresponseNotOk)
+TEST_F(opBuilderWdbQuery, completeFunctioningWithtDBresponseNotOk)
 {
     auto tuple {std::make_tuple(std::string {"/wdb/result"},
                                 std::string {"wdb_query"},
@@ -135,14 +151,7 @@ TEST(opBuilderWdbQuery, completeFunctioningWithtDBresponseNotOk)
         close(clientRemote);
     });
 
-    // Disable warning logs for this test
-    const auto logLevel {logging::getDefaultLogger()->level()};
-    logging::getDefaultLogger()->set_level(spdlog::level::off);
-
     result::Result<Event> result {op(event)};
-
-    // Restore log level
-    logging::getDefaultLogger()->set_level(logLevel);
 
     ASSERT_FALSE(result);
     // TODO Should be null or inexistant??
@@ -152,7 +161,7 @@ TEST(opBuilderWdbQuery, completeFunctioningWithtDBresponseNotOk)
     close(serverSocketFD);
 }
 
-TEST(opBuilderWdbQuery, completeFunctioningWithtDBresponseWithPayload)
+TEST_F(opBuilderWdbQuery, completeFunctioningWithtDBresponseWithPayload)
 {
     auto tuple {std::make_tuple(std::string {"/wdb/result"},
                                 std::string {"wdb_query"},
@@ -183,7 +192,7 @@ TEST(opBuilderWdbQuery, completeFunctioningWithtDBresponseWithPayload)
     close(serverSocketFD);
 }
 
-TEST(opBuilderWdbQuery, QueryResultCodeOkPayloadEmpty)
+TEST_F(opBuilderWdbQuery, QueryResultCodeOkPayloadEmpty)
 {
     auto tuple {std::make_tuple(std::string {"/wdb/result"},
                                 std::string {"wdb_query"},
@@ -214,7 +223,7 @@ TEST(opBuilderWdbQuery, QueryResultCodeOkPayloadEmpty)
     close(serverSocketFD);
 }
 
-TEST(opBuilderWdbQuery, QueryResultCodeOkNotPayload)
+TEST_F(opBuilderWdbQuery, QueryResultCodeOkNotPayload)
 {
     auto tuple {std::make_tuple(std::string {"/wdb/result"},
                                 std::string {"wdb_query"},

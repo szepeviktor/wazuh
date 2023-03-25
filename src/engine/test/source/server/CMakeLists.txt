@@ -11,5 +11,5 @@ target_include_directories(server_tests
     ${RxCpp_SOURCE_DIR}/Rx/v2/src
 )
 
-target_link_libraries(server_tests gtest engine_test_main server)
+target_link_libraries(server_tests gtest server)
 gtest_discover_tests(server_tests)

@@ -9,13 +9,29 @@
 
 #include "testAuxiliar/routerAuxiliarFunctions.hpp"
 
-TEST(EnvironmentManager, instance_ok)
+class EnvironmentManager : public ::testing::Test
+{
+
+protected:
+    virtual void SetUp()
+    {
+        // Logging setup
+        logging::LoggingConfig logConfig;
+        logConfig.logLevel = spdlog::level::off;
+        logConfig.filePath = logging::DEFAULT_TESTS_LOG_PATH;
+        logging::loggingInit(logConfig);
+    }
+
+    virtual void TearDown() {}
+};
+
+TEST_F(EnvironmentManager, instance_ok)
 {
     auto builder = aux::getFakeBuilder();
     ASSERT_NO_THROW(router::EnvironmentManager(builder, 1));
 }
 
-TEST(EnvironmentManager, instance_fail_null_builder)
+TEST_F(EnvironmentManager, instance_fail_null_builder)
 {
     try
     {
@@ -32,7 +48,7 @@ TEST(EnvironmentManager, instance_fail_null_builder)
     }
 }
 
-TEST(EnvironmentManager, zero_instances)
+TEST_F(EnvironmentManager, zero_instances)
 {
     auto builder = aux::getFakeBuilder();
     try
@@ -50,7 +66,7 @@ TEST(EnvironmentManager, zero_instances)
     }
 }
 
-TEST(EnvironmentManager, environmentFlow)
+TEST_F(EnvironmentManager, environmentFlow)
 {
     auto builder = aux::getFakeBuilder();
     auto numOfInstances = 10;
@@ -122,7 +138,7 @@ TEST(EnvironmentManager, environmentFlow)
     }
 }
 
-TEST(EnvironmentManager, addEnvironment_fail)
+TEST_F(EnvironmentManager, addEnvironment_fail)
 {
     auto builder = aux::getFakeBuilder();
     auto manager = router::EnvironmentManager(builder, 1);
@@ -130,7 +146,7 @@ TEST(EnvironmentManager, addEnvironment_fail)
     ASSERT_TRUE(err.has_value());
 }
 
-TEST(EnvironmentManager, add_list_del_environment)
+TEST_F(EnvironmentManager, add_list_del_environment)
 {
     auto builder = aux::getFakeBuilder();
     auto manager = router::EnvironmentManager(builder, 1);
