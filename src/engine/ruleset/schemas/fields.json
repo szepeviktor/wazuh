@@ -12609,8 +12609,8 @@
                 "string"
             ]
         },
-        "winlog.event_data": {
-            "description": "Module: ecs\nIndexerType: keyword\nArray: True\n\nThe event-specific data. This field is mutually exclusive with `user_data`. If you are capturing event data on versions prior to Windows Vista, the parameters in `event_data` are named `param1`, `param2`, and so on, because event log parameters are unnamed in earlier versions of Windows.\n",
+        "winlog.event_data.UserAccountControl": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: True\n\nList of changes in userAccountControl attribute. You will see a line of text for each change.\n",
             "type": [
                 "string",
                 "array"
@@ -12621,6 +12621,78 @@
                     "string"
                 ]
             }
+        },
+        "winlog.event_data.StatusDescription": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nKerberos Ticket Status Codes description\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.event_data.PrivilegeList": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nList of privileges assigned on Logon\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.event_data.OldTargetUserName": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nUser name to be updated\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.event_data.NewTargetUserName": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nNew user name to be assigned\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.event_data.NewSd": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nNew security descriptor\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.event_data.OldSd": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nOld security descriptor\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.event_data.ObjectType": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nObject type accessed during the operation\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.event_data.ObjectServer": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nObject server\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.event_data.ObjectName": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nAcces route or full name of the object accessed during operation\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.logon.failure.status": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nLogon failure status\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.logon.failure.sub_status": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nLogon failure sub status\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.logon.id": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nLogon id\n",
+            "type": [
+                "string"
+            ]
         },
         "winlog.trustAttribute": {
             "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nThe decimal value of attributes for new trust created to a domain.\n",
@@ -12654,6 +12726,24 @@
         },
         "winlog.task": {
             "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nThe task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.user_data.BackupPath": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nFull path to the created log backup.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.user_data.Channel": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nWindows event log channel that is being backed up.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "wilog.event_data.SubCategory": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nAudit subcategories categories\n",
             "type": [
                 "string"
             ]
