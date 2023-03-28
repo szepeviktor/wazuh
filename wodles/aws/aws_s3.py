@@ -1023,7 +1023,7 @@ class AWSBucket(WazuhIntegration):
 
             while True:
                 if 'Contents' not in bucket_files:
-                    self._print_not_logs_to_prcess_message(self.bucket, aws_account_id, aws_region)
+                    self._print_no_logs_to_process_message(self.bucket, aws_account_id, aws_region)
                     return
 
                 processed_logs = 0
@@ -1066,7 +1066,7 @@ class AWSBucket(WazuhIntegration):
                 # This is a workaround in order to work with custom buckets that don't have
                 # base prefix to search the logs
                 if processed_logs == 0:
-                    self._print_not_logs_to_prcess_message(self.bucket, aws_account_id, aws_region)
+                    self._print_no_logs_to_process_message(self.bucket, aws_account_id, aws_region)
 
                 if bucket_files['IsTruncated']:
                     new_s3_args = self.build_s3_filter_args(aws_account_id, aws_region, True)
@@ -2566,7 +2566,7 @@ class AWSServerAccess(AWSCustomBucket):
                                                                                    custom_delimiter='-'))
             while True:
                 if 'Contents' not in bucket_files:
-                    self._print_not_logs_to_prcess_message(self.bucket, aws_account_id, aws_region)
+                    self._print_no_logs_to_process_message(self.bucket, aws_account_id, aws_region)
                     return
 
                 processed_logs = 0
@@ -2614,7 +2614,7 @@ class AWSServerAccess(AWSCustomBucket):
                     processed_logs += 1
 
                 if processed_logs == 0:
-                    self._print_not_logs_to_prcess_message(self.bucket, aws_account_id, aws_region)
+                    self._print_no_logs_to_process_message(self.bucket, aws_account_id, aws_region)
 
                 if bucket_files['IsTruncated']:
                     new_s3_args = self.build_s3_filter_args(aws_account_id, aws_region, True)
