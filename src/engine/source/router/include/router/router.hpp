@@ -14,7 +14,7 @@
 #include <baseTypes.hpp>
 #include <store/istore.hpp>
 
-#include "environmentManager.hpp"
+#include "policyManager.hpp"
 #include "route.hpp"
 
 namespace router
