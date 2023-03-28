@@ -8173,13 +8173,13 @@ void test_wdb_global_set_agent_groups_sync_status_success(void** state){
 void test_wdb_global_get_distinct_agent_groups_transaction_fail(void **state)
 {
     test_struct_t *data  = (test_struct_t *)*state;
-    char group_hash[] = "abcdef";
+    char group_name[] = "abcdef";
 
     will_return(__wrap_wdb_begin2, -1);
     expect_string(__wrap__mdebug1, formatted_msg, "Cannot begin transaction");
 
     wdbc_result status = WDBC_UNKNOWN;
-    cJSON* result = wdb_global_get_distinct_agent_multi_groups(data->wdb, group_hash, &status);
+    cJSON* result = wdb_global_get_distinct_agent_multi_groups(data->wdb, group_name, &status);
 
     assert_int_equal(status, WDBC_ERROR);
     assert_null(result);
@@ -8188,14 +8188,14 @@ void test_wdb_global_get_distinct_agent_groups_transaction_fail(void **state)
 void test_wdb_global_get_distinct_agent_groups_cache_fail(void **state)
 {
     test_struct_t *data  = (test_struct_t *)*state;
-    char group_hash[] = "abcdef";
+    char group_name[] = "abcdef";
 
     will_return(__wrap_wdb_begin2, 1);
     will_return(__wrap_wdb_stmt_cache, -1);
     expect_string(__wrap__mdebug1, formatted_msg, "Cannot cache statement");
 
     wdbc_result status = WDBC_UNKNOWN;
-    cJSON* result = wdb_global_get_distinct_agent_multi_groups(data->wdb, group_hash, &status);
+    cJSON* result = wdb_global_get_distinct_agent_multi_groups(data->wdb, group_name, &status);
 
     assert_int_equal(status, WDBC_ERROR);
     assert_null(result);
@@ -8204,7 +8204,7 @@ void test_wdb_global_get_distinct_agent_groups_cache_fail(void **state)
 void test_wdb_global_get_distinct_agent_groups_bind_fail(void **state)
 {
     test_struct_t *data  = (test_struct_t *)*state;
-    char group_hash[] = "abcdef";
+    char group_name[] = "abcdef";
 
     will_return(__wrap_wdb_begin2, 1);
     will_return(__wrap_wdb_stmt_cache, 1);
@@ -8216,7 +8216,7 @@ void test_wdb_global_get_distinct_agent_groups_bind_fail(void **state)
     expect_string(__wrap__merror, formatted_msg, "DB(global) sqlite3_bind_text(): ERROR MESSAGE");
 
     wdbc_result status = WDBC_UNKNOWN;
-    cJSON* result = wdb_global_get_distinct_agent_multi_groups(data->wdb, group_hash, &status);
+    cJSON* result = wdb_global_get_distinct_agent_multi_groups(data->wdb, group_name, &status);
 
     assert_int_equal(status, WDBC_ERROR);
     assert_null(result);
@@ -8225,7 +8225,7 @@ void test_wdb_global_get_distinct_agent_groups_bind_fail(void **state)
 void test_wdb_global_get_distinct_agent_groups_exec_fail(void **state)
 {
     test_struct_t *data  = (test_struct_t *)*state;
-    char group_hash[] = "abcdef";
+    char group_name[] = "abcdef";
 
     will_return(__wrap_wdb_begin2, 1);
     will_return(__wrap_wdb_stmt_cache, 1);
@@ -8237,7 +8237,7 @@ void test_wdb_global_get_distinct_agent_groups_exec_fail(void **state)
     wrap_wdb_exec_stmt_sized_failed_call(STMT_MULTI_COLUMN);
 
     wdbc_result status = WDBC_UNKNOWN;
-    cJSON* result = wdb_global_get_distinct_agent_multi_groups(data->wdb, group_hash, &status);
+    cJSON* result = wdb_global_get_distinct_agent_multi_groups(data->wdb, group_name, &status);
 
     assert_int_equal(status, WDBC_ERROR);
     assert_null(result);
@@ -8246,8 +8246,8 @@ void test_wdb_global_get_distinct_agent_groups_exec_fail(void **state)
 void test_wdb_global_get_distinct_agent_groups_succes_due(void **state)
 {
     test_struct_t *data  = (test_struct_t *)*state;
-    char group_hash[] = "abcdef";
-    cJSON* j_result = cJSON_Parse("[{\"group\":\"group1\",\"group_hash\":\"ec282560\"}]");
+    char group_name[] = "abcdef";
+    cJSON* j_result = cJSON_Parse("[{\"group\":\"group1\"}]");
 
     will_return(__wrap_wdb_begin2, 1);
     will_return(__wrap_wdb_stmt_cache, 1);
@@ -8259,10 +8259,10 @@ void test_wdb_global_get_distinct_agent_groups_succes_due(void **state)
     wrap_wdb_exec_stmt_sized_socket_full_call(j_result, STMT_MULTI_COLUMN);
 
     wdbc_result status = WDBC_UNKNOWN;
-    cJSON* result = wdb_global_get_distinct_agent_multi_groups(data->wdb, group_hash, &status);
+    cJSON* result = wdb_global_get_distinct_agent_multi_groups(data->wdb, group_name, &status);
 
     char *output = cJSON_PrintUnformatted(result);
-    assert_string_equal(output, "[{\"group\":\"group1\",\"group_hash\":\"ec282560\"}]");
+    assert_string_equal(output, "[{\"group\":\"group1\"}]");
     os_free(output);
     assert_int_equal(status, WDBC_DUE);
     __real_cJSON_Delete(result);
@@ -8271,8 +8271,8 @@ void test_wdb_global_get_distinct_agent_groups_succes_due(void **state)
 void test_wdb_global_get_distinct_agent_groups_succes_ok(void **state)
 {
     test_struct_t *data  = (test_struct_t *)*state;
-    char group_hash[] = "abcdef";
-    cJSON* j_result = cJSON_Parse("[{\"group\":\"group1\",\"group_hash\":\"ec282560\"}]");
+    char group_name[] = "abcdef";
+    cJSON* j_result = cJSON_Parse("[{\"group\":\"group1\"}]");
 
     will_return(__wrap_wdb_begin2, 1);
     will_return(__wrap_wdb_stmt_cache, 1);
@@ -8284,10 +8284,10 @@ void test_wdb_global_get_distinct_agent_groups_succes_ok(void **state)
     wrap_wdb_exec_stmt_sized_success_call(j_result, STMT_MULTI_COLUMN);
 
     wdbc_result status = WDBC_UNKNOWN;
-    cJSON* result = wdb_global_get_distinct_agent_multi_groups(data->wdb, group_hash, &status);
+    cJSON* result = wdb_global_get_distinct_agent_multi_groups(data->wdb, group_name, &status);
 
     char *output = cJSON_PrintUnformatted(result);
-    assert_string_equal(output, "[{\"group\":\"group1\",\"group_hash\":\"ec282560\"}]");
+    assert_string_equal(output, "[{\"group\":\"group1\"}]");
     os_free(output);
     assert_int_equal(status, WDBC_OK);
     __real_cJSON_Delete(result);
