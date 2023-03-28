@@ -8641,7 +8641,58 @@
                         "type": "keyword"
                     },
                     "event_data": {
-                        "type": "keyword"
+                        "type": "object",
+                        "properties": {
+                            "UserAccountControl": {
+                                "type": "keyword"
+                            },
+                            "StatusDescription": {
+                                "type": "keyword"
+                            },
+                            "PrivilegeList": {
+                                "type": "keyword"
+                            },
+                            "OldTargetUserName": {
+                                "type": "keyword"
+                            },
+                            "NewTargetUserName": {
+                                "type": "keyword"
+                            },
+                            "NewSd": {
+                                "type": "keyword"
+                            },
+                            "OldSd": {
+                                "type": "keyword"
+                            },
+                            "ObjectType": {
+                                "type": "keyword"
+                            },
+                            "ObjectServer": {
+                                "type": "keyword"
+                            },
+                            "ObjectName": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "logon": {
+                        "type": "object",
+                        "properties": {
+                            "failure": {
+                                "type": "object",
+                                "properties": {
+                                    "status": {
+                                        "type": "keyword"
+                                    },
+                                    "sub_status": {
+                                        "type": "keyword"
+                                    }
+                                }
+                            },
+                            "id": {
+                                "type": "keyword"
+                            }
+                        }
                     },
                     "trustAttribute": {
                         "type": "keyword"
@@ -8665,6 +8716,30 @@
                     },
                     "task": {
                         "type": "keyword"
+                    },
+                    "user_data": {
+                        "type": "object",
+                        "properties": {
+                            "BackupPath": {
+                                "type": "keyword"
+                            },
+                            "Channel": {
+                                "type": "keyword"
+                            }
+                        }
+                    }
+                }
+            },
+            "wilog": {
+                "type": "object",
+                "properties": {
+                    "event_data": {
+                        "type": "object",
+                        "properties": {
+                            "SubCategory": {
+                                "type": "keyword"
+                            }
+                        }
                     }
                 }
             }
