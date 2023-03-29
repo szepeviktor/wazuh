@@ -12575,12 +12575,6 @@
                 "string"
             ]
         },
-        "winlog.trustType": {
-            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nThe account name that was added, modified or deleted in the event.\nPossible values are `TRUST_TYPE_DOWNLEVEL`, `TRUST_TYPE_UPLEVEL`, `TRUST_TYPE_MIT` and `TRUST_TYPE_DCE`\n",
-            "type": [
-                "string"
-            ]
-        },
         "winlog.channel": {
             "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nThe name of the channel from which this record was read.\n",
             "type": [
@@ -12609,6 +12603,21 @@
                 "string"
             ]
         },
+        "winlog.original_event_data": {
+            "description": "Module: ecs\nIndexerType: object\nArray: True\n\nThis is a non-exhaustive list of parameters that are used in Windows events.\n",
+            "type": [
+                "string",
+                "array"
+            ],
+            "pattern": "^[\\+\\$].+",
+            "items": {
+                "type": [
+                    "object",
+                    "string"
+                ],
+                "pattern": "^[\\+\\$].+"
+            }
+        },
         "winlog.event_data.UserAccountControl": {
             "description": "Module: ecs\nIndexerType: keyword\nArray: True\n\nList of changes in userAccountControl attribute. You will see a line of text for each change.\n",
             "type": [
@@ -12624,6 +12633,18 @@
         },
         "winlog.event_data.StatusDescription": {
             "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nKerberos Ticket Status Codes description\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.event_data.SubCategory": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nAudit subcategories\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.event_data.Category": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nAudit categories\n",
             "type": [
                 "string"
             ]
@@ -12676,20 +12697,44 @@
                 "string"
             ]
         },
+        "winlog.level": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nLog level, one of AUDIT, INFORMATIONAL, CRITICAL, ERROR, VERBOSE\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.message": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nEvent messsage\n",
+            "type": [
+                "string"
+            ]
+        },
         "winlog.logon.failure.status": {
-            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nLogon failure status\n",
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nThe reason the logon failed. This is textual description based on the value of the hexadecimal `Status` field.\n",
             "type": [
                 "string"
             ]
         },
         "winlog.logon.failure.sub_status": {
-            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nLogon failure sub status\n",
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nAdditional information about the logon failure. This is a textual description based on the value of the hexidecimal `SubStatus` field.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.logon.failure.reason": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nThe reason the logon failed.\n",
             "type": [
                 "string"
             ]
         },
         "winlog.logon.id": {
-            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nLogon id\n",
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nLogon ID that can be used to associate this logon with other events related to the same logon session.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.logon.type": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nLogon type name. This is the descriptive version of the `winlog.event_data.LogonType` ordinal. This is an enrichment added by the Security module.\n",
             "type": [
                 "string"
             ]
@@ -12702,6 +12747,12 @@
         },
         "winlog.trustDirection": {
             "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nThe direction of new trust created to a domain.\nPossible values are `TRUST_DIRECTION_DISABLED`, `TRUST_DIRECTION_INBOUND`, `TRUST_DIRECTION_OUTBOUND` and `TRUST_DIRECTION_BIDIRECTIONAL`\n",
+            "type": [
+                "string"
+            ]
+        },
+        "winlog.trustType": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nThe account name that was added, modified or deleted in the event.\nPossible values are `TRUST_TYPE_DOWNLEVEL`, `TRUST_TYPE_UPLEVEL`, `TRUST_TYPE_MIT` and `TRUST_TYPE_DCE`\n",
             "type": [
                 "string"
             ]
@@ -12742,8 +12793,126 @@
                 "string"
             ]
         },
-        "wilog.event_data.SubCategory": {
-            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nAudit subcategories categories\n",
+        "powershell.sequence": {
+            "description": "Module: ecs\nIndexerType: long\nArray: False\n\nSequence number of the powershell execution.\n",
+            "type": [
+                "number",
+                "string"
+            ],
+            "pattern": "^[\\+\\$].+"
+        },
+        "powershell.total": {
+            "description": "Module: ecs\nIndexerType: long\nArray: False\n\nTotal number of messages in the sequence.\n",
+            "type": [
+                "number",
+                "string"
+            ],
+            "pattern": "^[\\+\\$].+"
+        },
+        "powershell.id": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nShell Id.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "powershell.engine.version": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nVersion of the PowerShell engine version used to execute the command.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "powershell.engine.new_state": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nNew state of the PowerShell engine.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "powershell.engine.previous_state": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nPrevious state of the PowerShell engine.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "powershell.provider.new_state": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nNew state of the PowerShell provider.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "powershell.provider.name": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nProvider name.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "powershell.pipeline_id": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nPipeline id.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "powershell.runspace_id": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nRunspace id.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "powershell.process.executable_version": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nVersion of the engine hosting process executable.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "powershell.command.value": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nThe invoked command.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "powershell.command.path": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nPath of the executed command.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "powershell.command.name": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nName of the executed command.\n",
+            "type": [
+                "string"
+            ]
+        },
+        "powershell.command.type": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nType of the executed command.",
+            "type": [
+                "string"
+            ]
+        },
+        "powershell.file.script_block_id": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nId of the executed script block.",
+            "type": [
+                "string"
+            ]
+        },
+        "powershell.file.script_block_text": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nText of the executed script block.",
+            "type": [
+                "string"
+            ]
+        },
+        "sysmon.dns.status": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nWindows status code returned for the DNS query.",
+            "type": [
+                "string"
+            ]
+        },
+        "sysmon.file.archived": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nIndicates if the deleted file was archived.",
+            "type": [
+                "string"
+            ]
+        },
+        "sysmon.file.is_executable": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nIndicates if the deleted file was an executable.",
             "type": [
                 "string"
             ]

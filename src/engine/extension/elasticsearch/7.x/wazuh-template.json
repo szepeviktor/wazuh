@@ -8615,9 +8615,6 @@
             "winlog": {
                 "type": "object",
                 "properties": {
-                    "trustType": {
-                        "type": "keyword"
-                    },
                     "channel": {
                         "type": "keyword"
                     },
@@ -8640,6 +8637,9 @@
                     "record_id": {
                         "type": "keyword"
                     },
+                    "original_event_data": {
+                        "type": "object"
+                    },
                     "event_data": {
                         "type": "object",
                         "properties": {
@@ -8647,6 +8647,12 @@
                                 "type": "keyword"
                             },
                             "StatusDescription": {
+                                "type": "keyword"
+                            },
+                            "SubCategory": {
+                                "type": "keyword"
+                            },
+                            "Category": {
                                 "type": "keyword"
                             },
                             "PrivilegeList": {
@@ -8675,6 +8681,12 @@
                             }
                         }
                     },
+                    "level": {
+                        "type": "keyword"
+                    },
+                    "message": {
+                        "type": "keyword"
+                    },
                     "logon": {
                         "type": "object",
                         "properties": {
@@ -8686,10 +8698,16 @@
                                     },
                                     "sub_status": {
                                         "type": "keyword"
+                                    },
+                                    "reason": {
+                                        "type": "keyword"
                                     }
                                 }
                             },
                             "id": {
+                                "type": "keyword"
+                            },
+                            "type": {
                                 "type": "keyword"
                             }
                         }
@@ -8698,6 +8716,9 @@
                         "type": "keyword"
                     },
                     "trustDirection": {
+                        "type": "keyword"
+                    },
+                    "trustType": {
                         "type": "keyword"
                     },
                     "computerObject": {
@@ -8730,13 +8751,105 @@
                     }
                 }
             },
-            "wilog": {
+            "powershell": {
                 "type": "object",
                 "properties": {
-                    "event_data": {
+                    "sequence": {
+                        "type": "long"
+                    },
+                    "total": {
+                        "type": "long"
+                    },
+                    "id": {
+                        "type": "keyword"
+                    },
+                    "engine": {
                         "type": "object",
                         "properties": {
-                            "SubCategory": {
+                            "version": {
+                                "type": "keyword"
+                            },
+                            "new_state": {
+                                "type": "keyword"
+                            },
+                            "previous_state": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "provider": {
+                        "type": "object",
+                        "properties": {
+                            "new_state": {
+                                "type": "keyword"
+                            },
+                            "name": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "pipeline_id": {
+                        "type": "keyword"
+                    },
+                    "runspace_id": {
+                        "type": "keyword"
+                    },
+                    "process": {
+                        "type": "object",
+                        "properties": {
+                            "executable_version": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "command": {
+                        "type": "object",
+                        "properties": {
+                            "value": {
+                                "type": "keyword"
+                            },
+                            "path": {
+                                "type": "keyword"
+                            },
+                            "name": {
+                                "type": "keyword"
+                            },
+                            "type": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "file": {
+                        "type": "object",
+                        "properties": {
+                            "script_block_id": {
+                                "type": "keyword"
+                            },
+                            "script_block_text": {
+                                "type": "keyword"
+                            }
+                        }
+                    }
+                }
+            },
+            "sysmon": {
+                "type": "object",
+                "properties": {
+                    "dns": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "file": {
+                        "type": "object",
+                        "properties": {
+                            "archived": {
+                                "type": "keyword"
+                            },
+                            "is_executable": {
                                 "type": "keyword"
                             }
                         }
