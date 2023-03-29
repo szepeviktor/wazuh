@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include <gtest/gtest.h>
+#include <testsCommon.hpp>
 
 using namespace api::kvdb::handlers;
 
@@ -80,15 +81,6 @@ inline void createKeyOnlyJsonTestFile(const std::string filePath = FILE_PATH)
     }
 }
 
-void initLogging(void)
-{
-    // Logging setup
-    logging::LoggingConfig logConfig;
-    logConfig.logLevel = "off";
-    logConfig.filePath = logging::DEFAULT_TESTS_LOG_PATH;
-    logging::loggingInit(logConfig);
-}
-
 // "managerPost" tests section
 class managerPost_Handler : public ::testing::Test
 {
@@ -96,7 +88,7 @@ class managerPost_Handler : public ::testing::Test
 protected:
     std::shared_ptr<kvdb_manager::KVDBManager> kvdbManager;
 
-    virtual void SetUp()
+    void SetUp() override
     {
         initLogging();
 
@@ -109,7 +101,7 @@ protected:
         ASSERT_FALSE(std::holds_alternative<base::Error>(varHandle));
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         if (std::filesystem::exists(FILE_PATH))
         {
@@ -395,7 +387,7 @@ protected:
 
     std::shared_ptr<kvdb_manager::KVDBManager> kvdbManager;
 
-    virtual void SetUp()
+    void SetUp() override
     {
         initLogging();
 
@@ -410,7 +402,7 @@ protected:
 
     size_t getNumberOfKVDBLoaded() { return kvdbManager->listDBs().size(); }
 
-    virtual void TearDown() {}
+    void TearDown() override {}
 
     api::wpRequest deleteWRequest(const std::string& kvdbName)
     {
@@ -583,7 +575,7 @@ class managerDump_Handler : public ::testing::Test
 protected:
     std::shared_ptr<kvdb_manager::KVDBManager> kvdbManager;
 
-    virtual void SetUp()
+    void SetUp() override
     {
         initLogging();
 
@@ -602,7 +594,7 @@ protected:
         ASSERT_FALSE(std::holds_alternative<base::Error>(varHandle));
     }
 
-    virtual void TearDown() {}
+    void TearDown() override {}
 
     api::wpRequest dumpWRequest(const std::string& kvdbName)
     {
@@ -737,7 +729,7 @@ class dbGet_Handler : public ::testing::Test
 protected:
     std::shared_ptr<kvdb_manager::KVDBManager> kvdbManager;
 
-    virtual void SetUp()
+    void SetUp() override
     {
         initLogging();
 
@@ -749,7 +741,7 @@ protected:
         kvdbManager->createFromJFile(DB_NAME);
     }
 
-    virtual void TearDown() {}
+    void TearDown() override {}
 
     api::wpRequest getWRequest(const std::string& kvdbName, const std::string& keyName)
     {
@@ -881,7 +873,7 @@ class dbPut_Handler : public ::testing::Test
 protected:
     std::shared_ptr<kvdb_manager::KVDBManager> kvdbManager;
 
-    virtual void SetUp()
+    void SetUp() override
     {
         initLogging();
 
@@ -893,7 +885,7 @@ protected:
         kvdbManager->createFromJFile(DB_NAME);
     }
 
-    virtual void TearDown() {}
+    void TearDown() override {}
 
     api::wpRequest
     insertWRequest(const std::string& kvdbName, const std::string& keyName, const std::string& keyValue = "")
@@ -1050,7 +1042,7 @@ protected:
 
     std::shared_ptr<kvdb_manager::KVDBManager> kvdbManager;
 
-    virtual void SetUp()
+    void SetUp() override
     {
         initLogging();
 
@@ -1063,7 +1055,7 @@ protected:
         ASSERT_FALSE(std::holds_alternative<base::Error>(varHandle));
     }
 
-    virtual void TearDown() {}
+    void TearDown() override {}
 
     api::wpRequest listWRequest(const bool& mustBeLoaded)
     {
@@ -1158,7 +1150,7 @@ class dbDelete_Handler : public ::testing::Test
 protected:
     std::shared_ptr<kvdb_manager::KVDBManager> kvdbManager;
 
-    virtual void SetUp()
+    void SetUp() override
     {
         initLogging();
 
@@ -1171,7 +1163,7 @@ protected:
         kvdbManager->writeRaw(DB_NAME, KEY_A, VAL_A);
     }
 
-    virtual void TearDown() {}
+    void TearDown() override {}
 
     api::wpRequest removeWRequest(const std::string& kvdbName, const std::string& keyName)
     {

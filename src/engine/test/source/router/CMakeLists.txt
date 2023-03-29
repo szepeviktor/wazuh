@@ -5,9 +5,13 @@ add_executable(router_test
   ${TEST_SOURCE_DIR}/router/router_test.cpp
   ${TEST_SOURCE_DIR}/router/runtimeEnvironment_test.cpp
   ${TEST_SOURCE_DIR}/router/environmentManager_test.cpp
-
-
 )
+
+target_include_directories(router_test
+  PRIVATE
+  ${TEST_SOURCE_DIR}/base/utils/tests
+)
+
 target_link_libraries(router_test gtest_main base router builders rxbk store::fileDriver)
 gtest_discover_tests(router_test)
 

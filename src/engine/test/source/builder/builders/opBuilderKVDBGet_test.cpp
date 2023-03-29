@@ -15,7 +15,7 @@
 
 #include <baseTypes.hpp>
 #include <kvdb/kvdbManager.hpp>
-#include <logging/logging.hpp>
+#include <testsCommon.hpp>
 #include <opBuilderKVDB.hpp>
 
 namespace
@@ -33,13 +33,9 @@ protected:
     std::shared_ptr<kvdb_manager::KVDBManager> kvdbManager =
         std::make_shared<kvdb_manager::KVDBManager>(opBuilderKVDBGetTest::DB_DIR);
 
-    virtual void SetUp()
+    void SetUp() override
     {
-        // Logging setup
-        logging::LoggingConfig logConfig;
-        logConfig.logLevel = "off";
-        logConfig.filePath = logging::DEFAULT_TESTS_LOG_PATH;
-        logging::loggingInit(logConfig);
+        initLogging();
 
         auto res = kvdbManager->getHandler(DB_NAME, true);
         if (auto err = std::get_if<base::Error>(&res))
@@ -49,7 +45,7 @@ protected:
         auto db = std::get<kvdb_manager::KVDBHandle>(res);
     }
 
-    virtual void TearDown() { kvdbManager->unloadDB(DB_NAME); }
+    void TearDown() override { kvdbManager->unloadDB(DB_NAME); }
 };
 
 // Build ok

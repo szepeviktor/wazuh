@@ -3,6 +3,7 @@
 #include <string>
 
 #include <gtest/gtest.h>
+#include <testsCommon.hpp>
 
 #include "parseEvent.hpp"
 #include "register.hpp"
@@ -13,16 +14,9 @@ class EnvironmentManager : public ::testing::Test
 {
 
 protected:
-    virtual void SetUp()
-    {
-        // Logging setup
-        logging::LoggingConfig logConfig;
-        logConfig.logLevel = "off";
-        logConfig.filePath = logging::DEFAULT_TESTS_LOG_PATH;
-        logging::loggingInit(logConfig);
-    }
+    void SetUp() override { initLogging(); }
 
-    virtual void TearDown() {}
+    void TearDown() override {}
 };
 
 TEST_F(EnvironmentManager, instance_ok)

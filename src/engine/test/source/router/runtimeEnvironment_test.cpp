@@ -10,6 +10,8 @@
 #include "parseEvent.hpp"
 #include "register.hpp"
 
+#include <testsCommon.hpp>
+
 constexpr auto env_1 = "environment/env_1/0";
 constexpr auto env_2 = "environment/env_2/0";
 constexpr auto env_default = "environment/default/0";
@@ -18,16 +20,9 @@ class RuntimeEnvironment : public ::testing::Test
 {
 
 protected:
-    virtual void SetUp()
-    {
-        // Logging setup
-        logging::LoggingConfig logConfig;
-        logConfig.logLevel = "off";
-        logConfig.filePath = logging::DEFAULT_TESTS_LOG_PATH;
-        logging::loggingInit(logConfig);
-    }
+    void SetUp() override { initLogging(); }
 
-    virtual void TearDown() {}
+    void TearDown() override {}
 };
 
 TEST_F(RuntimeEnvironment, build_ok)

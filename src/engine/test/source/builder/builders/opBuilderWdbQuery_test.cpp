@@ -17,7 +17,7 @@
 #include <utils/socketInterface/unixDatagram.hpp>
 #include <utils/socketInterface/unixSecureStream.hpp>
 
-#include <logging/logging.hpp>
+#include <testsCommon.hpp>
 #include <wdb/wdb.hpp>
 
 #include "opBuilderWdb.hpp"
@@ -32,16 +32,9 @@ class opBuilderWdbQuery : public ::testing::Test
 {
 
 protected:
-    virtual void SetUp()
-    {
-        // Logging setup
-        logging::LoggingConfig logConfig;
-        logConfig.logLevel = "off";
-        logConfig.filePath = logging::DEFAULT_TESTS_LOG_PATH;
-        logging::loggingInit(logConfig);
-    }
+    void SetUp() override { initLogging(); }
 
-    virtual void TearDown() {}
+    void TearDown() override {}
 };
 
 // Build ok

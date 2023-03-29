@@ -14,7 +14,7 @@
 #include <utils/socketInterface/unixSecureStream.hpp>
 #include <wdb/wdb.hpp>
 
-#include <logging/logging.hpp>
+#include <testsCommon.hpp>
 
 #include "opBuilderHelperActiveResponse.hpp"
 #include "socketAuxiliarFunctions.hpp"
@@ -38,29 +38,20 @@ auto timeout {"100"};
 auto extraArgsRef {"$_extra_args"};
 const vector<string> arCreateCommonArguments {commandName, location, timeout, extraArgsRef};
 
-void initLogging(void)
-{
-    // Logging setup
-    logging::LoggingConfig logConfig;
-    logConfig.logLevel = "off";
-    logConfig.filePath = logging::DEFAULT_TESTS_LOG_PATH;
-    logging::loggingInit(logConfig);
-}
-
 class opBuilderSendARTestSuite : public ::testing::Test
 {
 protected:
-    virtual void SetUp() { initLogging(); }
+    void SetUp() override { initLogging(); }
 
-    virtual void TearDown() {}
+    void TearDown() override {}
 };
 
 class opBuilderHelperCreateARTestSuite : public ::testing::Test
 {
 protected:
-    virtual void SetUp() { initLogging(); }
+    void SetUp() override { initLogging(); }
 
-    virtual void TearDown() {}
+    void TearDown() override {}
 };
 
 TEST_F(opBuilderSendARTestSuite, Builder)

@@ -8,19 +8,14 @@
 
 #include "testAuxiliar/routerAuxiliarFunctions.hpp"
 
+#include <testsCommon.hpp>
+
 class Router : public ::testing::Test
 {
 protected:
-    virtual void SetUp()
-    {
-        // Logging setup
-        logging::LoggingConfig logConfig;
-        logConfig.logLevel = "off";
-        logConfig.filePath = logging::DEFAULT_TESTS_LOG_PATH;
-        logging::loggingInit(logConfig);
-    };
+    void SetUp() override { initLogging(); }
 
-    virtual void TearDown() {};
+    void TearDown() override {};
 };
 
 TEST_F(Router, build_ok)
