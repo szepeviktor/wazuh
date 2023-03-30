@@ -8649,6 +8649,9 @@
                             "StatusDescription": {
                                 "type": "keyword"
                             },
+                            "TicketEncryptionTypeDescription": {
+                                "type": "keyword"
+                            },
                             "SubCategory": {
                                 "type": "keyword"
                             },

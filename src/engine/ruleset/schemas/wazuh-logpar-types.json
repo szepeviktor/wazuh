@@ -1337,6 +1337,7 @@
         "winlog.process.thread.id": "long",
         "winlog.record_id": "keyword",
         "winlog.event_data.StatusDescription": "keyword",
+        "winlog.event_data.TicketEncryptionTypeDescription": "keyword",
         "winlog.event_data.SubCategory": "keyword",
         "winlog.event_data.Category": "keyword",
         "winlog.event_data.PrivilegeList": "keyword",

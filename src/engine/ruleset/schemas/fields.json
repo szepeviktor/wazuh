@@ -12637,6 +12637,12 @@
                 "string"
             ]
         },
+        "winlog.event_data.TicketEncryptionTypeDescription": {
+            "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nKerberos Encryption Types\n",
+            "type": [
+                "string"
+            ]
+        },
         "winlog.event_data.SubCategory": {
             "description": "Module: ecs\nIndexerType: keyword\nArray: False\n\nAudit subcategories\n",
             "type": [
