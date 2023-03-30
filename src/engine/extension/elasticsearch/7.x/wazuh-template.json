@@ -7533,6 +7533,43 @@
                 "properties": {
                     "queue": {
                         "type": "long"
+                    },
+                    "syscollector": {
+                        "type": "object",
+                        "properties": {
+                            "hardware": {
+                                "type": "object"
+                            },
+                            "hotfix": {
+                                "type": "object"
+                            },
+                            "netinfo": {
+                                "type": "object",
+                                "properties": {
+                                    "addr": {
+                                        "type": "object"
+                                    },
+                                    "iface": {
+                                        "type": "object"
+                                    },
+                                    "proto": {
+                                        "type": "object"
+                                    }
+                                }
+                            },
+                            "os": {
+                                "type": "object"
+                            },
+                            "port": {
+                                "type": "object"
+                            },
+                            "process": {
+                                "type": "object"
+                            },
+                            "program": {
+                                "type": "object"
+                            }
+                        }
                     }
                 }
             },
@@ -8257,6 +8294,9 @@
                             },
                             "virusname": {
                                 "type": "keyword"
+                            },
+                            "serial_number": {
+                                "type": "keyword"
                             }
                         }
                     },
@@ -8303,6 +8343,9 @@
                             },
                             "timezone": {
                                 "type": "keyword"
+                            },
+                            "date": {
+                                "type": "keyword"
                             }
                         }
                     },
@@ -8330,31 +8373,6 @@
                                 "type": "keyword"
                             },
                             "user_sid_dst": {
-                                "type": "keyword"
-                            }
-                        }
-                    },
-                    "db_index": {
-                        "type": "keyword"
-                    },
-                    "email": {
-                        "type": "object",
-                        "properties": {
-                            "email_dst": {
-                                "type": "keyword"
-                            },
-                            "email_src": {
-                                "type": "keyword"
-                            },
-                            "subject": {
-                                "type": "keyword"
-                            }
-                        }
-                    },
-                    "threat": {
-                        "type": "object",
-                        "properties": {
-                            "threat_desc": {
                                 "type": "keyword"
                             }
                         }
