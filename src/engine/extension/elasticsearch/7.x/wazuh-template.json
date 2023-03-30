@@ -8112,6 +8112,9 @@
                             },
                             "messageid": {
                                 "type": "keyword"
+                            },
+                            "msg": {
+                                "type": "keyword"
                             }
                         }
                     },
@@ -8324,6 +8327,34 @@
                         "type": "object",
                         "properties": {
                             "logon_type": {
+                                "type": "keyword"
+                            },
+                            "user_sid_dst": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "db_index": {
+                        "type": "keyword"
+                    },
+                    "email": {
+                        "type": "object",
+                        "properties": {
+                            "email_dst": {
+                                "type": "keyword"
+                            },
+                            "email_src": {
+                                "type": "keyword"
+                            },
+                            "subject": {
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "threat": {
+                        "type": "object",
+                        "properties": {
+                            "threat_desc": {
                                 "type": "keyword"
                             }
                         }
