@@ -9,7 +9,7 @@ add_executable(router_test
 
 target_include_directories(router_test
   PRIVATE
-  ${TEST_SOURCE_DIR}/base/utils/tests
+  ${TEST_SOURCE_DIR}/common
 )
 
 target_link_libraries(router_test gtest_main base router builders rxbk store::fileDriver)
