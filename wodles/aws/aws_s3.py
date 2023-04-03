@@ -347,6 +347,9 @@ class WazuhIntegration:
             debug(json_msg, 3)
             s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
             s.connect(self.wazuh_queue)
+            with open('asl-events.txt', 'a') as f:
+                f.write("{header}{msg}\n".format(header=self.msg_header,
+                                          msg=json_msg if dump_json else msg).encode())
             s.send("{header}{msg}".format(header=self.msg_header,
                                           msg=json_msg if dump_json else msg).encode())
             s.close()
