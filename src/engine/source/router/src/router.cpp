@@ -5,8 +5,6 @@
 
 #include <builder.hpp>
 
-#include <parseEvent.hpp>
-
 namespace router
 {
 constexpr auto WAIT_DEQUEUE_TIMEOUT_USEC = 1 * 1000000;

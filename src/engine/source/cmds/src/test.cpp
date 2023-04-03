@@ -22,7 +22,6 @@
 #include "defaultSettings.hpp"
 #include "register.hpp"
 #include "registry.hpp"
-#include "server/wazuhStreamProtocol.hpp"
 
 namespace
 {

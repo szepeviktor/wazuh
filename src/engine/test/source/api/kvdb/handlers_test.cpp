@@ -1336,16 +1336,7 @@ TEST_F(dbDelete_Handler, RemoveReturnsOkWithNonExistingKeyName)
 TEST(kvdbAPICmdsTest, registerHandlers)
 {
     auto kvdbManager = std::make_shared<kvdb_manager::KVDBManager>(DB_DIR);
+    auto api = std::make_shared<api::Api>();
+    ASSERT_NO_THROW(registerHandlers(kvdbManager, api));
 
-    auto apiReg = std::make_shared<api::Registry>();
-
-    ASSERT_NO_THROW(registerHandlers(kvdbManager, apiReg));
-
-    ASSERT_NO_THROW(apiReg->getHandler("kvdb.manager/post"));
-    ASSERT_NO_THROW(apiReg->getHandler("kvdb.manager/delete"));
-    ASSERT_NO_THROW(apiReg->getHandler("kvdb.manager/get"));
-    ASSERT_NO_THROW(apiReg->getHandler("kvdb.manager/dump"));
-    ASSERT_NO_THROW(apiReg->getHandler("kvdb.db/put"));
-    ASSERT_NO_THROW(apiReg->getHandler("kvdb.db/delete"));
-    ASSERT_NO_THROW(apiReg->getHandler("kvdb.db/get"));
 }

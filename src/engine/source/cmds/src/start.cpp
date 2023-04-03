@@ -22,9 +22,13 @@
 #include <hlp/registerParsers.hpp>
 #include <kvdb/kvdbManager.hpp>
 #include <logging/logging.hpp>
+#include <parseEvent.hpp> // Event
 #include <router/router.hpp>
 #include <rxbk/rxFactory.hpp>
+#include <server/endpoints/unixDatagram.hpp> // Event
+#include <server/endpoints/unixStream.hpp>   //API
 #include <server/engineServer.hpp>
+#include <server/protocolHandlers/wStream.hpp> //API
 #include <store/drivers/fileDriver.hpp>
 
 #include "base/utils/getExceptionStack.hpp"
@@ -39,7 +43,6 @@ cmd::details::StackExecutor g_exitHanlder {};
 void sigint_handler(const int signum)
 {
     g_exitHanlder.execute();
-    exit(EXIT_SUCCESS);
 }
 
 struct Options
@@ -68,18 +71,14 @@ void runStart(ConfHandler confManager)
     const auto logOutput = confManager->get<std::string>("server.log_output");
     const auto confPath = confManager->get<std::string>("config");
 
+    // TODO: Use this value to configure the thread pool and add the router threads
+    const auto threads = confManager->get<int>("server.threads");
     // Server config
     const auto queueSize = confManager->get<int>("server.queue_size");
     const auto eventEndpoint = confManager->get<std::string>("server.event_socket");
     const auto apiEndpoint = confManager->get<std::string>("server.api_socket");
-    const auto threads = confManager->get<int>("server.threads");
     const auto floodFilePath = confManager->get<std::string>("server.flood_file");
 
-    std::optional<std::string> floodFile = std::nullopt;
-    if (!floodFilePath.empty())
-    {
-        floodFile = floodFilePath;
-    }
 
     // KVDB config
     const auto kvdbPath = confManager->get<std::string>("server.kvdb_path");
@@ -138,24 +137,31 @@ void runStart(ConfHandler confManager)
     WAZUH_LOG_DEBUG("Logging poll interval '{}'", logConfig.pollInterval);
 
     // Init modules
+    std::shared_ptr<api::Api> api;
+    std::shared_ptr<engineserver::EngineServer> server;
     std::shared_ptr<store::FileDriver> store;
     std::shared_ptr<builder::Builder> builder;
     std::shared_ptr<api::catalog::Catalog> catalog;
-    std::shared_ptr<engineserver::EngineServer> server;
     std::shared_ptr<router::Router> router;
     std::shared_ptr<hlp::logpar::Logpar> logpar;
     std::shared_ptr<kvdb_manager::KVDBManager> kvdb;
+    std::shared_ptr<base::queue::ConcurrentQueue<base::Event>> eventQueue;
 
     try
     {
-        const auto bufferSize {static_cast<size_t>(queueSize)};
+        // API
+        {
+            api = std::make_shared<api::Api>();
+            WAZUH_LOG_DEBUG("API created.");
+        }
 
-        // TODO Add the option to configure the flooded file
-        // TODO Change the default buffer size to a multiple of 1024
-        server =
-            std::make_shared<engineserver::EngineServer>(apiEndpoint, nullptr, eventEndpoint, floodFile, bufferSize);
-        g_exitHanlder.add([server]() { server->close(); });
-        WAZUH_LOG_DEBUG("Server configured.");
+        // Queue
+        {
+            const auto bufferSize {static_cast<size_t>(queueSize)};
+            eventQueue = std::make_shared<base::queue::ConcurrentQueue<base::Event>>(queueSize, floodFilePath);
+            WAZUH_LOG_DEBUG("Event queue created.");
+        }
+
 
         kvdb = std::make_shared<kvdb_manager::KVDBManager>(kvdbPath);
         WAZUH_LOG_INFO("KVDB initialized.");
@@ -167,7 +173,7 @@ void runStart(ConfHandler confManager)
             });
 
         // Register KVDB commands
-        api::kvdb::handlers::registerHandlers(kvdb, server->getRegistry());
+        api::kvdb::handlers::registerHandlers(kvdb, api);
         WAZUH_LOG_DEBUG("KVDB API registered.")
 
         store = std::make_shared<store::FileDriver>(fileStorage);
@@ -205,17 +211,18 @@ void runStart(ConfHandler confManager)
         catalog = std::make_shared<api::catalog::Catalog>(catalogConfig);
         WAZUH_LOG_INFO("Catalog initialized.");
 
-        api::catalog::handlers::registerHandlers(catalog, server->getRegistry());
+        api::catalog::handlers::registerHandlers(catalog, api);
         WAZUH_LOG_DEBUG("Catalog API registered.")
 
         router = std::make_shared<router::Router>(builder, store, threads);
-        router->run(server->getEventQueue());
+        auto queue = std::make_shared<base::queue::ConcurrentQueue<base::Event>> (queueSize);
+
+        router->run(queue);
         g_exitHanlder.add([router]() { router->stop(); });
         WAZUH_LOG_INFO("Router initialized.");
 
         // Register the API command
-        //server->getRegistry()->registerHandler("router", router->apiCallbacks());
-        api::router::handlers::registerHandlers(router, server->getRegistry());
+        api::router::handlers::registerHandlers(router, api);
         WAZUH_LOG_DEBUG("Router API registered.")
 
         // If the router table is empty or the force flag is passed, load from the command line
@@ -230,8 +237,28 @@ void runStart(ConfHandler confManager)
         }
 
         // Register Configuration API commands
-        api::config::handlers::registerHandlers(server->getRegistry(), confManager);
+        api::config::handlers::registerHandlers(api, confManager);
         WAZUH_LOG_DEBUG("Configuration manager API registered.");
+
+        // Server
+        {
+            using namespace engineserver;
+            server = std::make_shared<EngineServer>();
+            g_exitHanlder.add([server]() { server->request_stop(); });
+
+            // API Endpoint
+            auto apiCallback = std::bind(&api::Api::processRequest, api, std::placeholders::_1);
+            auto apiClientFactory = std::make_shared<ph::WStreamFactory>(apiCallback); // API endpoint
+            // TODO: Config-> 10 max tasks, 1000 ms timeout (config file)
+            auto apiEndpointConfig = std::make_shared<endpoint::UnixStream>(apiEndpoint, apiClientFactory, 10);
+            server->addEndpoint("API", apiEndpointConfig);
+
+            // Event Endpoint
+            auto eventCallback = std::bind(&router::Router::fastEnqueueEvent, router, std::placeholders::_1);
+            auto eventEndpointConfig = std::make_shared<endpoint::UnixDatagram>(eventEndpoint, eventCallback, 20);
+            server->addEndpoint("EVENT", eventEndpointConfig);
+            WAZUH_LOG_DEBUG("Server configured.");
+        }
     }
     catch (const std::exception& e)
     {
@@ -244,7 +271,7 @@ void runStart(ConfHandler confManager)
     // Start server
     try
     {
-        server->run();
+        server->start();
     }
     catch (const std::exception& e)
     {
