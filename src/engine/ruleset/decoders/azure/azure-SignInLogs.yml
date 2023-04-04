@@ -1,7 +1,7 @@
-name: decoder/azure_SignInLogs/0
+name: decoder/azure-SignInLogs/0
 
-sources: 
-  - decoder/azure_base_decoder/0
+sources:
+  - decoder/azure-decoder/0
 
 metadata:
   description: Decoder for Azure SignInLogs events
@@ -16,7 +16,7 @@ metadata:
     - https://learn.microsoft.com/en-us/azure/active-directory/reports-monitoring/concept-sign-ins
 
 check:
-   - ~json.Type: SigninLogs 
+   - ~json.Type: SigninLogs
 
 normalize:
   - map:
@@ -83,11 +83,11 @@ normalize:
   - check: NOT $~temp.status.errorCode OR $~temp.status.errorCode==0
     map:
      - event.outcome: success
-  
+
   - check: $~temp.status.errorCode AND $~temp.status.errorCode>0
     map:
      - event.outcome: failure
-    
+
   - logpar:
     - ~json.UserPrincipalName: <user.name>@<user.domain>
 

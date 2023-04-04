@@ -1,7 +1,7 @@
-name: decoder/azure_ActivityLogs/0
+name: decoder/azure-ActivityLogs/0
 
-sources: 
-  - decoder/azure_base_decoder/0
+sources:
+  - decoder/azure-decoder/0
 
 metadata:
   description: ActivityLog decoder for Azure events
@@ -38,7 +38,7 @@ normalize:
     - ~json.CallerIpAddress: "[<source.ip>]:<source.port>"
     - ~json.CallerIpAddress: <source.ip>
 
-  - map:  
+  - map:
     - client.ip: $source.ip
     - related.ip: $source.ip
 

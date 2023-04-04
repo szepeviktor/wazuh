@@ -1,7 +1,7 @@
 
-name: decoder/azure_base_decoder/0
+name: decoder/azure-decoder/0
 
-sources: 
+sources:
   - decoder/json/0
 
 metadata:
