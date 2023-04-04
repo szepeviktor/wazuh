@@ -17,9 +17,9 @@ TEST(Router, build_ok)
     auto builder = aux::getFakeBuilder();
     auto store = aux::getFakeStore();
 
-    router::Router router(builder, store);
+    ASSERT_NO_THROW(router::Router router(builder, store));
 }
-// Add more test
+
 TEST(Router, build_fail)
 {
 
