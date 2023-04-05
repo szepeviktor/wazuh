@@ -41,7 +41,6 @@ consoleHandler.setFormatter(formatter)
 fileHandler.setFormatter(formatter)
 logger.addHandler(consoleHandler)
 logger.addHandler(fileHandler)
-pwd = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 def main(alert_file_location: str, webhook: str):
     logger.info("Starting")
