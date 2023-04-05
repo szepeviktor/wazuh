@@ -58,7 +58,7 @@ def main(args: list[str]):
         # Read arguments
         invalid_arguments = False
         if len(args) > 3:
-            msg = '{1} {2} {3} {4}'.format(
+            msg = '{0} {1} {2} {3}'.format(
                 args[1],
                 args[2],
                 args[3],
