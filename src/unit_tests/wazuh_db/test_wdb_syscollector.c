@@ -945,7 +945,7 @@ void test_wdb_netinfo_insert_default_fail(void **state) {
 
     will_return(__wrap_wdb_step_non_select, 1);
     will_return(__wrap_sqlite3_errmsg, "ERROR");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_netinfo_insert(): wdb_step(): ERROR");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR");
 
     output = wdb_netinfo_insert(data, "scan_id", "scan_time", "name", "adapter", "type", "state", 1, "mac", 2, 3, 4, 5, 6, 7, 8, 9, "checksum", "item_id", false);
     assert_int_equal(output, -1);
@@ -1020,7 +1020,7 @@ void test_wdb_netinfo_insert_sql_constraint_fail(void **state) {
     will_return(__wrap_wdb_step_non_select, SQLITE_CONSTRAINT);
     will_return(__wrap_sqlite3_errmsg, "DUPLICATE");
     will_return(__wrap_sqlite3_errmsg, "DUPLICATE");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_netinfo_insert(): wdb_step(): DUPLICATE");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: DUPLICATE");
 
     output = wdb_netinfo_insert(data, "scan_id", "scan_time", "name", "adapter", "type", "state", 1, "mac", 2, 3, 4, 5, 6, 7, 8, 9, "checksum", "item_id", false);
     assert_int_equal(output, -1);
@@ -1093,8 +1093,7 @@ void test_wdb_netinfo_insert_sql_constraint_success(void **state) {
     will_return(__wrap_wdb_step_non_select, SQLITE_CONSTRAINT);
     will_return(__wrap_sqlite3_errmsg, "UNIQUE");
     will_return(__wrap_sqlite3_errmsg, "UNIQUE");
-    expect_string(__wrap__mdebug1, formatted_msg, "at wdb_netinfo_insert(): wdb_step(): UNIQUE");
-    //expect_string(__wrap__merror, formatted_msg, "at wdb_package_insert(): wdb_step(): UNIQUE");
+    expect_string(__wrap__mdebug1, formatted_msg, "SQLite: UNIQUE");
 
     output = wdb_netinfo_insert(data, "scan_id", "scan_time", "name", "adapter", "type", "state", 1, "mac", 2, 3, 4, 5, 6, 7, 8, 9, "checksum", "item_id", false);
     assert_int_equal(output, 0);
@@ -1217,7 +1216,7 @@ void test_wdb_netproto_insert_default_fail(void **state) {
 
     will_return(__wrap_wdb_step_non_select, 1);
     will_return(__wrap_sqlite3_errmsg, "ERROR");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_netproto_insert(): wdb_step(): ERROR");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR");
 
     output = wdb_netproto_insert(data, "scan_id", "iface", WDB_NETADDR_IPV4, "gateway", "dhcp", 6, "checksum", "item_id", false);
     assert_int_equal(output, -1);
@@ -1259,7 +1258,7 @@ void test_wdb_netproto_insert_sql_constraint_fail(void **state) {
     will_return(__wrap_wdb_step_non_select, SQLITE_CONSTRAINT);
     will_return(__wrap_sqlite3_errmsg, "DUPLICATED");
     will_return(__wrap_sqlite3_errmsg, "DUPLICATED");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_netproto_insert(): wdb_step(): DUPLICATED");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: DUPLICATED");
 
     output = wdb_netproto_insert(data, "scan_id", "iface", WDB_NETADDR_IPV4, "gateway", "dhcp", 6, "checksum", "item_id", false);
     assert_int_equal(output, -1);
@@ -1301,7 +1300,7 @@ void test_wdb_netproto_insert_sql_constraint_success(void **state) {
     will_return(__wrap_wdb_step_non_select, SQLITE_CONSTRAINT);
     will_return(__wrap_sqlite3_errmsg, "UNIQUE");
     will_return(__wrap_sqlite3_errmsg, "UNIQUE");
-    expect_string(__wrap__mdebug1, formatted_msg, "at wdb_netproto_insert(): wdb_step(): UNIQUE");
+    expect_string(__wrap__mdebug1, formatted_msg, "SQLite: UNIQUE");
 
     output = wdb_netproto_insert(data, "scan_id", "iface", WDB_NETADDR_IPV4, "gateway", "dhcp", 6, "checksum", "item_id", false);
     assert_int_equal(output, 0);
@@ -1454,7 +1453,7 @@ void test_wdb_netaddr_insert_fail(void **state) {
 
     will_return(__wrap_wdb_step_non_select, 1);
     will_return(__wrap_sqlite3_errmsg, "ERROR");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_netaddr_insert(): wdb_step(): ERROR");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR");
 
     output = wdb_netaddr_insert(data, "scan_id", "iface", WDB_NETADDR_IPV4, "address", "netmask", "broadcast", "checksum", "item_id", false);
     assert_int_equal(output, -1);
@@ -2144,7 +2143,7 @@ void test_wdb_osinfo_insert_sql_fail(void ** state) {
 
     will_return(__wrap_wdb_step_non_select, 1);
     will_return(__wrap_sqlite3_errmsg, "ERROR");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_osinfo_insert(): wdb_step(): ERROR");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR");
 
     output =
         wdb_osinfo_insert(data, "scan_id", "scan_time", "hostname", "architecture", "os_name", "os_version",
@@ -2319,7 +2318,7 @@ void test_wdb_package_insert_default_fail(void **state) {
 
     will_return(__wrap_wdb_step_non_select, 1);
     will_return(__wrap_sqlite3_errmsg, "ERROR");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_package_insert(): wdb_step(): ERROR");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR");
 
 
     output = wdb_package_insert(data, "scan_id", "scan_time", "format", "name", "priority", "section", 0, "vendor", "install_time", "version", "architecture", "multiarch", "source", "description", "location", 0, "checksum", "item_id", false);
@@ -2389,7 +2388,7 @@ void test_wdb_package_insert_sql_constraint_fail(void **state) {
     will_return(__wrap_wdb_step_non_select, SQLITE_CONSTRAINT);
     will_return(__wrap_sqlite3_errmsg, "DUPLICATED");
     will_return(__wrap_sqlite3_errmsg, "DUPLICATED");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_package_insert(): wdb_step(): DUPLICATED");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: DUPLICATED");
 
     output = wdb_package_insert(data, "scan_id", "scan_time", "format", "name", "priority", "section", 0, "vendor", "install_time", "version", "architecture", "multiarch", "source", "description", "location", 0, "checksum", "item_id", false);
     assert_int_equal(output, -1);
@@ -2458,7 +2457,7 @@ void test_wdb_package_insert_sql_constraint_success(void **state) {
     will_return(__wrap_wdb_step_non_select, SQLITE_CONSTRAINT);
     will_return(__wrap_sqlite3_errmsg, "UNIQUE");
     will_return(__wrap_sqlite3_errmsg, "UNIQUE");
-    expect_string(__wrap__mdebug1, formatted_msg, "at wdb_package_insert(): wdb_step(): UNIQUE");
+    expect_string(__wrap__mdebug1, formatted_msg, "SQLite: UNIQUE");
 
     output = wdb_package_insert(data, "scan_id", "scan_time", "format", "name", "priority", "section", 0, "vendor", "install_time", "version", "architecture", "multiarch", "source", "description", "location", 0, "checksum", "item_id", false);
     assert_int_equal(output, 0);
@@ -3011,7 +3010,7 @@ void test_wdb_hardware_insert_sql_fail(void **state) {
 
     will_return(__wrap_wdb_step_non_select, 1);
     will_return(__wrap_sqlite3_errmsg, "ERROR");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_hardware_insert(): wdb_step(): ERROR");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR");
 
     output = wdb_hardware_insert(data, "scan_id", "scan_time", "serial", "cpu_name", 4, 2900, 8192, 6144, 2048, "checksum", false);
     assert_int_equal(output, -1);
@@ -3164,7 +3163,7 @@ void test_wdb_port_insert_sql_fail(void **state) {
 
     will_return(__wrap_wdb_step_non_select, 1);
     will_return(__wrap_sqlite3_errmsg, "ERROR");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_port_insert(): wdb_step(): ERROR");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR");
 
     output = wdb_port_insert(data, "scan_id", "scan_time", "protocol", "local_ip", 1, "remote_ip", -1, -1, -1, 1, "state", -1, "process", "checksum", "item_id", false);
     assert_int_equal(output, -1);
@@ -3453,7 +3452,7 @@ void test_wdb_process_insert_sql_fail(void **state) {
 
     will_return(__wrap_wdb_step_non_select, 1);
     will_return(__wrap_sqlite3_errmsg, "ERROR");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_process_insert(): wdb_step(): ERROR");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR");
 
     output = wdb_process_insert(data, "scan_id", "scan_time", 1, "name", "state", -1, -1, -1, "cmd", "argvs", "euser", "ruser", "suser", "egroup", "rgroup", "sgroup", "fgroup", -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, "checksum", false);
     assert_int_equal(output, -1);
@@ -4661,7 +4660,7 @@ static void test_wdb_netinfo_insert_negative_values_error(void **state) {
     configure_wdb_netinfo_insert(test_netinfo, SQLITE_ERROR);
 
     will_return(__wrap_sqlite3_errmsg, "ERROR_MESSAGE");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_netinfo_insert(): wdb_step(): ERROR_MESSAGE");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR_MESSAGE");
 
     ret = wdb_netinfo_insert(data->wdb, test_netinfo.scan_id, test_netinfo.scan_time, test_netinfo.name, test_netinfo.adapter, test_netinfo.type,
                              test_netinfo._state, test_netinfo.mtu, test_netinfo.mac, test_netinfo.tx_packets, test_netinfo.rx_packets, test_netinfo.tx_bytes,
@@ -4679,7 +4678,7 @@ static void test_wdb_netinfo_insert_name_constraint_success(void **state) {
 
     will_return(__wrap_sqlite3_errmsg, "UNIQUE constraint failed");
     will_return(__wrap_sqlite3_errmsg, "UNIQUE constraint failed");
-    expect_string(__wrap__mdebug1, formatted_msg, "at wdb_netinfo_insert(): wdb_step(): UNIQUE constraint failed");
+    expect_string(__wrap__mdebug1, formatted_msg, "SQLite: UNIQUE constraint failed");
 
 
     ret = wdb_netinfo_insert(data->wdb, netinfo.scan_id, netinfo.scan_time, netinfo.name, netinfo.adapter, netinfo.type,
@@ -4698,7 +4697,7 @@ static void test_wdb_netinfo_insert_name_constraint_fail(void **state) {
 
     will_return(__wrap_sqlite3_errmsg, "ERROR_MESSAGE");
     will_return(__wrap_sqlite3_errmsg, "ERROR_MESSAGE");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_netinfo_insert(): wdb_step(): ERROR_MESSAGE");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR_MESSAGE");
 
 
     ret = wdb_netinfo_insert(data->wdb, netinfo.scan_id, netinfo.scan_time, netinfo.name, netinfo.adapter, netinfo.type,
@@ -4802,7 +4801,7 @@ static void test_wdb_netproto_insert_negative_values_error(void **state) {
     test_netproto.metric = OS_INVALID;
 
     will_return(__wrap_sqlite3_errmsg, "ERROR_MESSAGE");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_netproto_insert(): wdb_step(): ERROR_MESSAGE");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR_MESSAGE");
 
     configure_wdb_netproto_insert(test_netproto, SQLITE_ERROR);
 
@@ -4821,7 +4820,7 @@ static void test_wdb_netproto_insert_name_constraint_success(void **state) {
 
     will_return(__wrap_sqlite3_errmsg, "UNIQUE constraint failed");
     will_return(__wrap_sqlite3_errmsg, "UNIQUE constraint failed");
-    expect_string(__wrap__mdebug1, formatted_msg, "at wdb_netproto_insert(): wdb_step(): UNIQUE constraint failed");
+    expect_string(__wrap__mdebug1, formatted_msg, "SQLite: UNIQUE constraint failed");
 
     ret = wdb_netproto_insert(data->wdb, test_netproto.scan_id, test_netproto.iface, test_netproto.type, test_netproto.gateway, test_netproto.dhcp, test_netproto.metric,
                               test_netproto.checksum, test_netproto.item_id, test_netproto.replace);
@@ -4838,7 +4837,7 @@ static void test_wdb_netproto_insert_name_constraint_fail(void **state) {
 
     will_return(__wrap_sqlite3_errmsg, "ERROR_MESSAGE");
     will_return(__wrap_sqlite3_errmsg, "ERROR_MESSAGE");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_netproto_insert(): wdb_step(): ERROR_MESSAGE");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR_MESSAGE");
 
     ret = wdb_netproto_insert(data->wdb, test_netproto.scan_id, test_netproto.iface, test_netproto.type, test_netproto.gateway, test_netproto.dhcp, test_netproto.metric,
                               test_netproto.checksum, test_netproto.item_id, test_netproto.replace);
@@ -4925,7 +4924,7 @@ static void test_wdb_osinfo_insert_step_error(void **state) {
     configure_wdb_osinfo_insert(osinfo, SQLITE_ERROR);
 
     will_return(__wrap_sqlite3_errmsg, "ERROR");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_osinfo_insert(): wdb_step(): ERROR");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR");
 
     ret = wdb_osinfo_insert(data->wdb, osinfo.scan_id, osinfo.scan_time, osinfo.hostname, osinfo.architecture, osinfo.os_name,
                             osinfo.os_version, osinfo.os_codename, osinfo.os_major, osinfo.os_minor, osinfo.os_patch, osinfo.os_build,
@@ -4971,7 +4970,7 @@ static void test_wdb_package_insert_step_error(void **state) {
     configure_wdb_package_insert(package, SQLITE_ERROR);
 
     will_return(__wrap_sqlite3_errmsg, "ERROR");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_package_insert(): wdb_step(): ERROR");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR");
 
     ret = wdb_package_insert(data->wdb, package.scan_id, package.scan_time, package.format, package.name, package.priority, package.section,
                              package.size, package.vendor, package.install_time, package.version, package.architecture, package.multiarch,
@@ -5025,7 +5024,7 @@ static void test_wdb_package_insert_constraint_success(void **state) {
     will_return(__wrap_sqlite3_errmsg, "UNIQUE constraint failed");
     will_return(__wrap_sqlite3_errmsg, "UNIQUE constraint failed");
 
-    expect_string(__wrap__mdebug1, formatted_msg, "at wdb_package_insert(): wdb_step(): UNIQUE constraint failed");
+    expect_string(__wrap__mdebug1, formatted_msg, "SQLite: UNIQUE constraint failed");
 
     ret = wdb_package_insert(data->wdb, package.scan_id, package.scan_time, package.format, package.name, package.priority, package.section,
                              package.size, package.vendor, package.install_time, package.version, package.architecture, package.multiarch,
@@ -5043,7 +5042,7 @@ static void test_wdb_package_insert_constraint_fail(void **state) {
 
     will_return(__wrap_sqlite3_errmsg, "ERROR");
     will_return(__wrap_sqlite3_errmsg, "ERROR");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_package_insert(): wdb_step(): ERROR");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR");
 
     ret = wdb_package_insert(data->wdb, package.scan_id, package.scan_time, package.format, package.name, package.priority, package.section,
                             package.size, package.vendor, package.install_time, package.version, package.architecture, package.multiarch,
@@ -5094,7 +5093,7 @@ static void test_wdb_hotfix_insert_step_error(void **state) {
     configure_wdb_hotfix_insert(hotfix, SQLITE_ERROR);
 
     will_return(__wrap_sqlite3_errmsg, "ERROR");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_hotfix_insert(): wdb_step(): ERROR");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR");
 
     ret = wdb_hotfix_insert(data->wdb, hotfix.scan_id, hotfix.scan_time, hotfix.hotfix, hotfix.checksum, hotfix.replace);
 
@@ -5133,7 +5132,7 @@ static void test_wdb_hardware_insert_step_error(void **state) {
     configure_wdb_hardware_insert(hardware, SQLITE_ERROR);
 
     will_return(__wrap_sqlite3_errmsg, "ERROR");
-    expect_string(__wrap__merror, formatted_msg, "at wdb_hardware_insert(): wdb_step(): ERROR");
+    expect_string(__wrap__merror, formatted_msg, "SQLite: ERROR");
 
     ret = wdb_hardware_insert(data->wdb, hardware.scan_id, hardware.scan_time, hardware.serial, hardware.cpu_name, hardware.cpu_cores,
                               hardware.cpu_mhz, hardware.ram_total, hardware.ram_free, hardware.ram_usage, hardware.checksum, hardware.replace);
