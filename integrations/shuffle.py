@@ -17,7 +17,6 @@
 import json
 import sys
 import logging
-import logging.handlers
 import os
 from urllib.parse import urlparse
 
@@ -44,14 +43,6 @@ LOG_FILE = f'{pwd}/logs/integrations.log'
 SKIP_RULE_IDS = ["87924", "87900", "87901", "87902", "87903", "87904", "86001", "86002", "86003", "87932",
                  "80710", "87929", "87928", "5710"]
 logger = logging.getLogger("shuffle")
-consoleHandler = logging.StreamHandler()
-fileHandler = logging.handlers.WatchedFileHandler(LOG_FILE)
-formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s", "%a %b %d %H:%M:%S %Z %Y")
-consoleHandler.setFormatter(formatter)
-fileHandler.setFormatter(formatter)
-logger.addHandler(consoleHandler)
-logger.addHandler(fileHandler)
-
 
 def main(args: list[str]):
     try:
@@ -71,6 +62,8 @@ def main(args: list[str]):
             print_help_msg()
             sys.exit(2)
 
+        setup_logger(args)
+
         alert_file_location = args[1]
         if not os.path.exists(alert_file_location):
             raise FileNotFoundError(f"Alert file specified {alert_file_location} does not exist")
@@ -78,11 +71,6 @@ def main(args: list[str]):
         webhook: str = args[3]
         if not is_valid_url(webhook):
             raise Exception(f"Invalid webhook URL: {webhook}")
-
-        if len(args) > 4:
-            logger.setLevel(args[4].upper())
-        else:
-            logger.setLevel(logging.INFO)
 
         # Logging the call
         logger.debug(msg)
@@ -208,6 +196,24 @@ def is_valid_url(url: str) -> bool:
     except ValueError:
         return False
 
+def setup_logger(args):
+    # Create log file directories if they do not exist
+    log_file_dir = os.path.dirname(LOG_FILE)
+    if not os.path.exists(log_file_dir):
+        os.makedirs(log_file_dir)
+
+    consoleHandler = logging.StreamHandler()
+    fileHandler = logging.FileHandler(LOG_FILE)
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s", "%a %b %d %H:%M:%S %Z %Y")
+    consoleHandler.setFormatter(formatter)
+    fileHandler.setFormatter(formatter)
+    logger.addHandler(consoleHandler)
+    logger.addHandler(fileHandler)
+
+    if len(args) > 4:
+        logger.setLevel(args[4].upper())
+    else:
+        logger.setLevel(logging.INFO)
 
 if __name__ == "__main__":
     main(sys.argv)
