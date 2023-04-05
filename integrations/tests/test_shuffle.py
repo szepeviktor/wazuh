@@ -31,9 +31,9 @@ msg_template = '{"severity": 1, "pretext": "WAZUH Alert", "title": "alert descri
                '"description": "alert description", "id": "rule-id", "firedtimes": 1}, "id": "alert_id", "full_log": ' \
                '"full log.", "decoder": {"name": "decoder-name"}, "location": "wazuh-X"}}'
 
-sys_args_template = ['/var/ossec/integrations/shuffle.py', '/tmp/shuffle-XXXXXX-XXXXXXX.alert', '',
-                     'http://<IP>:3001/api/v1/hooks/<HOOK_ID>']
+alerts_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data/alerts.json')
 
+sys_args_template = ['/var/ossec/integrations/shuffle.py', alerts_file, '', 'http://<IP>:3001/api/v1/hooks/<HOOK_ID>']
 
 def test_main_bad_arguments_exit():
     """Test that main function exits when wrong number of arguments are passed."""
