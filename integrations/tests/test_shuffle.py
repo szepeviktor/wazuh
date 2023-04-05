@@ -8,10 +8,11 @@
 import sys
 import os
 import json
+import logging
 import pytest
 import requests
 import shuffle
-from unittest.mock import patch, mock_open
+from unittest.mock import patch, mock_open, MagicMock
 
 sys.path.append(os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '..', '..'))
@@ -31,7 +32,7 @@ msg_template = '{"severity": 1, "pretext": "WAZUH Alert", "title": "alert descri
                '"full log.", "decoder": {"name": "decoder-name"}, "location": "wazuh-X"}}'
 
 sys_args_template = ['/var/ossec/integrations/shuffle.py', '/tmp/shuffle-XXXXXX-XXXXXXX.alert', '',
-                     'http://<IP>:3001/api/v1/hooks/<HOOK_ID>', ' > /dev/null 2>&1']
+                     'http://<IP>:3001/api/v1/hooks/<HOOK_ID>']
 
 
 def test_main_bad_arguments_exit():
@@ -58,14 +59,14 @@ def test_main():
             patch('requests.post', return_value=requests.Response), \
             patch('shuffle.process_args') as process:
         shuffle.main(sys_args_template)
-        process.assert_called_once_with(sys_args_template)
+        process.assert_called_once_with(sys_args_template[1], sys_args_template[3])
 
 
-@pytest.mark.parametrize('side_effect, return_value', [
-    (FileNotFoundError, 3),
-    (json.decoder.JSONDecodeError("Expecting value", "", 0), 4)
+@pytest.mark.parametrize('file_path, side_effect', [
+    ('/tmp/non-existent', FileNotFoundError),
+    (sys_args_template[1], json.decoder.JSONDecodeError("Expecting value", "", 0))
 ])
-def test_process_args_exit(side_effect, return_value):
+def test_process_args_exit(file_path, side_effect):
     """Test the process_args function exit codes.
 
     Parameters
@@ -79,8 +80,8 @@ def test_process_args_exit(side_effect, return_value):
             patch('json.load') as json_load, \
             pytest.raises(SystemExit) as pytest_wrapped_e:
         json_load.side_effect = side_effect
-        shuffle.process_args(sys_args_template)
-    assert pytest_wrapped_e.value.code == return_value
+        shuffle.main((file_path, ''))
+    assert pytest_wrapped_e.value.code == 2
 
 
 def test_process_args():
@@ -90,8 +91,8 @@ def test_process_args():
             patch('shuffle.send_msg') as send_msg, \
             patch('shuffle.generate_msg', return_value=msg_template) as generate_msg, \
             patch('requests.post', return_value=requests.Response):
-        shuffle.process_args(sys_args_template)
-        alert_file.assert_called_once_with(sys_args_template[1])
+        shuffle.process_args(sys_args_template[1], sys_args_template[3])
+        alert_file.assert_called_once_with(sys_args_template[1], encoding='utf-8')
         generate_msg.assert_called_once_with(alert_template)
         send_msg.assert_called_once_with(msg_template, sys_args_template[3])
 
@@ -102,18 +103,29 @@ def test_process_args_not_sending_message():
             patch('json.load', return_value=alert_template), \
             patch('shuffle.send_msg') as send_msg, \
             patch('shuffle.generate_msg', return_value=''):
-        shuffle.process_args(sys_args_template)
+        shuffle.process_args(sys_args_template[1], sys_args_template[3])
         send_msg.assert_not_called()
 
 
-def test_debug():
-    """Test the correct execution of the debug function, writing the expected log when debug mode enabled."""
-    with patch('shuffle.debug_enabled', return_value=True), \
-            patch("shuffle.open", mock_open()) as open_mock, \
-            patch('shuffle.LOG_FILE', return_value='integrations.log') as log_file:
-        shuffle.debug(msg_template)
-        open_mock.assert_called_with(log_file, 'a')
-        open_mock().write.assert_called_with(f"{shuffle.now}: {msg_template}\n")
+def test_logger(caplog):
+    """Test the correct execution of the logger."""
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    with patch('requests.post', return_value=mock_response):
+        with caplog.at_level(logging.DEBUG, logger='shuffle'):
+            args = sys_args_template
+            args.append('info')
+            shuffle.main(args)
+
+    # Assert console log correctness
+    assert caplog.records[0].message == 'Starting'
+    assert caplog.records[1].message == f'Alerts file location: {sys_args_template[1]}'
+    assert caplog.records[2].message == f'Webhook: {sys_args_template[3]}'
+    assert caplog.records[-1].levelname == 'INFO'
+    assert "DEBUG" not in caplog.text
+    # Assert the log file is created and is not empty
+    assert os.path.exists(shuffle.LOG_FILE)
+    assert os.path.getsize(shuffle.LOG_FILE) > 0
 
 
 @pytest.mark.parametrize('rule_id, expected_msg', [
@@ -186,6 +198,8 @@ def test_send_msg_raise_exception():
 def test_send_msg():
     """Test that the send_msg function works as expected."""
     headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
-    with patch('requests.post', return_value=requests.Response) as request_post:
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    with patch('requests.post', return_value=mock_response) as request_post:
         shuffle.send_msg(msg_template, sys_args_template[3])
         request_post.assert_called_once_with(sys_args_template[3], data=msg_template, headers=headers, verify=False)
