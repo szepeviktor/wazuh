@@ -62,7 +62,7 @@ def main(args: list[str]):
                 args[1],
                 args[2],
                 args[3],
-                args[4].upper() if len(args) > 4 else '',
+                args[4].upper() if len(args) > 4 else 'INFO',
             )
         else:
             bad_arguments = True
