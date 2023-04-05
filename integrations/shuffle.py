@@ -56,7 +56,7 @@ logger.addHandler(fileHandler)
 def main(args: list[str]):
     try:
         # Read arguments
-        bad_arguments = False
+        invalid_arguments = False
         if len(args) > 3:
             msg = '{1} {2} {3} {4}'.format(
                 args[1],
@@ -65,9 +65,9 @@ def main(args: list[str]):
                 args[4].upper() if len(args) > 4 else 'INFO',
             )
         else:
-            bad_arguments = True
+            invalid_arguments = True
 
-        if bad_arguments:
+        if invalid_arguments:
             print_help_msg()
             sys.exit(2)
 
@@ -179,21 +179,21 @@ def print_help_msg():
     help_msg = '''Exiting: Invalid arguments.
     
 Usage:
-    slack [Alerts file path] [API key] [Webhook URL] [Logging level]
+    shuffle <alerts_file> [api_key] <webhook_url> [logging_level]
 
 Arguments:
-    Alerts file path (required)
+    alerts_file (required)
         Path to the JSON file containing the alerts.
 
-    API key (not required)
+    api_key (not required)
         The API key argument is not needed for the Shuffle integration. However, it's still considered because the 
         integrator executes all scripts with the same arguments.
         If you are executing the script manually, please put anything in that argument.
 
-    Webhook URL (required)
-        Slack webhook URL where the messages will be sent to.
+    webhook_url (required)
+        Shuffle webhook URL where the messages will be sent to.
 
-    Logging level (optional)
+    logging_level (optional)
         Used to define how much information should be logged. Default is INFO.
 
         Levels: NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL.
